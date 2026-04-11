@@ -1,0 +1,56 @@
+@startuml facturator
+!pragma layout smetana
+class Client {
+  - id: number
+  - name: string
+  - address: string
+  - email: string
+  - passwd: string
+}
+
+class Product {
+  - id: number
+  - name: string
+  - description: string
+  - sellPrice: number
+  - image: string
+  - quantity: number
+}
+
+class Order {
+  - id: number
+  'data en la que es fa l'ordre
+  - orderDate: Date
+  'data en la que es paga la factura
+  - datePaid: Date
+  - totalPrice: number
+  - status: OrderStatus
+}
+
+class OrderLine {
+  - id: number
+  - unityPrice: number
+  - quantity: number
+}
+
+enum OrderStatus {
+  'factura pagada
+  PAID
+  'es equivalent a comanda
+  PREPARING
+  'comanda per a servir
+  READY
+  'una vegada servida, es considera factura
+  SERVED
+}
+
+
+Client "1" -- "*" Order : tiene >
+
+Order "1" -- "*" OrderLine : contiene >
+
+OrderLine "*" -- "1" Product : referencia a >
+
+Order ..> OrderStatus : <<use>>
+
+@enduml

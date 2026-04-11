@@ -1,0 +1,37 @@
+{
+    "name": "repasback",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+        "start1": "ts-node src/index.ts",
+        "start": "ts-node-dev --respawn --transpile-only src/index.ts",
+        "typeorm": "typeorm-ts-node-commonjs",
+        "dev": "concurrently \"npm run start\"  \"npm run watch-entities\"",
+        "copy-entities": "copyfiles -u 2 ./src/entity/* ../barassistantshared/src/entity",
+        "copy-controller": "copyfiles -u 2 ./src/controller/SocketController.ts ../barassistantshared/src/controller",
+        "watch-entities": "onchange \"src/entity/*.ts\" -- npm run copy-entities",
+        "watch-controller": "onchange \"src/controller/SocketController.ts\" -- npm run copy-controller"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "body-parser": "^2.2.2",
+        "concurrently": "^9.2.1",
+        "cors": "^2.8.6",
+        "express": "^5.2.1",
+        "onchange": "^7.1.0",
+        "pg": "^8.20.0",
+        "reflect-metadata": "^0.2.2",
+        "typeorm": "^0.3.28"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.6",
+        "@types/node": "^25.5.2",
+        "install": "^0.13.0",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^6.0.2"
+    }
+}

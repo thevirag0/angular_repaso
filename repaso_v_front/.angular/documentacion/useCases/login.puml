@@ -1,0 +1,14 @@
+@startuml login 
+title Login Use Case 
+actor "User" as User
+rectangle "Login System"{
+    usecase "Login" as Log
+    useCase "Validate" as Vald
+    usecase "SignUp" as Sing
+    usecase "Forgotten Password" as FP
+}
+User -- Log
+Log .> Vald:include
+Log ..> Sing:extends
+Log ..> FP:extends
+@enduml

@@ -1,0 +1,23 @@
+@startuml 
+
+!pragma layout smetana
+left to right direction
+actor "Administrador" as Admin
+
+rectangle "Client Management" {
+    
+    usecase "View Clients" as view
+    usecase "Select Client" as select
+    usecase "Add Client" as add
+    usecase "Edit Client" as edit
+    usecase "Delete Client" as delete
+
+    Admin --> view 
+    view ..> select : <<extend>> 
+    edit ..> select : <<include>>
+    add ..> view : <<extend>>
+    delete ..> select : <<include>>
+
+}
+
+@enduml

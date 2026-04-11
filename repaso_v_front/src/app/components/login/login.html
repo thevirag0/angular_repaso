@@ -1,0 +1,24 @@
+<h3>Log In</h3>
+<p-floatlabel variant="on" class="m-4" >
+    <input type="email" id="email" pInputText [(ngModel)]="email">
+    <label for="email">Email</label>
+</p-floatlabel>
+<p-floatlabel variant="on" class="m-4" >
+    <input type="password" id="pwd" pInputText [(ngModel)]="password" >
+    <label for="password">Password</label>
+</p-floatlabel>
+    <p-button label="Log In" (click)="logIn();show()"/>
+
+
+ <div class="flex justify-end gap-2">
+            <p-dialog header="Information" [modal]="true" [(visible)]="visible">
+                <span class="p-text-secondary block mb-4">{{message()}}</span>
+                <div class="flex justify-content-end">
+                    <p-button label="Accept" severity="secondary" (click)="visible = false" />
+                </div>
+            </p-dialog>
+</div>
+
+ <div class="card flex justify-center">
+            <p-toast />
+        </div>
