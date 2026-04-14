@@ -62,7 +62,7 @@ export class Client implements OnInit {
       case "MODIFY":
           this.clientService.updateClient(this.editClient().id, this.editClient()).subscribe({
             next: (updatedClient) => {
-              console.log('Cliente actualizado: ', updatedClient);
+              console.log('Client updated : ', updatedClient);
               this.visible = false;
               //recargar lista
               this.clientService.listClients().subscribe({
@@ -72,7 +72,7 @@ export class Client implements OnInit {
               });
             },
             error: (err) => {
-              console.log('Error al actualizar: ', err);
+              console.log('Error updating: ', err);
               this.errorMessage.set('Error updating client');
               this.mensajeVisible.set(true);
             }
@@ -81,7 +81,7 @@ export class Client implements OnInit {
       case "ADD":
         this.clientService.addClient(this.editClient()).subscribe({
           next: (newClient) => {
-            console.log('Cliente añadido:', newClient);
+            console.log('Client added:', newClient);
             this.visible = false;
             // Recargar lista desde backend
             this.clientService.listClients().subscribe({
@@ -91,7 +91,7 @@ export class Client implements OnInit {
             });
           },
           error: (err) => {
-            console.log('Error al añadir:', err);
+            console.log('Error adding:', err);
             this.errorMessage.set('Error adding client');
             this.mensajeVisible.set(true);
           }
@@ -110,7 +110,7 @@ export class Client implements OnInit {
               });
             },
             error: (err) => {
-              console.log('Error al eliminar:', err);
+              console.log('Error deleting:', err);
               this.errorMessage.set('Error deleting client');
               this.mensajeVisible.set(true);
             }
