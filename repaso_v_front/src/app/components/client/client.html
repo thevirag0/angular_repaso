@@ -1,0 +1,69 @@
+<div class="card">
+    <p-table [value]="allClients()" [paginator]="true" [rows]="5" [tableStyle]="{ 'min-width': '50rem' }"
+        [rowsPerPageOptions]="[5, 10, 20]">
+        <ng-template #header>
+            <tr>
+                <th style="width:25%">Name</th>
+                <th style="width:25%">Address</th>
+                <th style="width:25%">Email</th>
+                <th style="width:25%">Password</th>
+                <th><p-button label="Add +" (click)="isReadonly.set(false);buttonMessage.set('Save');newClient()" /></th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-client>
+            <tr>
+                <td>{{ client.name }}</td>
+                <td>{{ client.address }}</td>
+                <td>{{ client.email }}</td>
+                <td>{{ client.password }}</td>
+                <td>
+                <div class="flex center-content-center">
+                    <p-button label="Modify" (click)="isReadonly.set(false);buttonMessage.set('Save');modifyClient(client)" />
+                </div>
+            </td>
+            <td>
+                <div class="flex center-content-center">
+                    <p-button label="Delete" (click)="isReadonly.set(true);buttonMessage.set('Delete');deleteClient(client)" />
+                </div>
+            </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+<div class="card flex justify-center">
+    <p-dialog header="Client Information" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+        <span class="p-text-secondary block mb-8">{{message()}}</span>
+        <div class="flex items-center gap-4 mb-4">
+            <label for="name" class="font-semibold w-24">Name</label>
+            <input pInputText id="name" class="flex-auto" [readonly]="isReadonly()" autocomplete="off"
+                [(ngModel)]="editClient().name" />
+        </div>
+        <div class="flex items-center gap-4 mb-8">
+            <label for="address" class="font-semibold w-24">Address</label>
+            <input pInputText id="address" class="flex-auto" [readonly]="isReadonly()" autocomplete="off"
+                [(ngModel)]="editClient().address" />
+        </div>
+        <div class="flex items-center gap-4 mb-8">
+            <label for="email" class="font-semibold w-24">Email</label>
+            <input pInputText id="email" class="flex-auto" [readonly]="isReadonly()" autocomplete="off"
+                [(ngModel)]="editClient().email" />
+        </div>
+        <div class="flex items-center gap-4 mb-8">
+            <label for="password" class="font-semibold w-24">Password</label>
+            <input pInputText id="password" class="flex-auto" [readonly]="isReadonly()" autocomplete="off"
+                [(ngModel)]="editClient().password" />
+        </div>
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="secondary" (click)="visible=false" />
+            <p-button label="{{buttonMessage()}}" (click)="save()" />
+        </div>
+    </p-dialog>
+</div>
+
+<p-dialog header="Error" [modal]="true" [(visible)]="mensajeVisible" [style]="{ width: '25rem' }">
+    <span class="p-text-secondary block mb-8">{{errorMessage()}}</span>
+
+    <div class="flex justify-end gap-2">
+        <p-button label="Close" (click)="mensajeVisible.set(false)" />
+    </div>
+</p-dialog>

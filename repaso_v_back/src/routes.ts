@@ -64,6 +64,12 @@ export const Routes = [
         action: "save"
     },
     {
+        method: "put",
+        route: API + "/clients/:id",
+        controller: ClientController,
+        action: "update"
+    },
+    {
         method: "delete",
         route: API + "/clients/:id",
         controller: ClientController,

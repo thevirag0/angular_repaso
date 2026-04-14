@@ -45,6 +45,34 @@ export class ClientController {
         }
     }
 
+    async update(request: Request, response: Response, next: NextFunction) {
+        const id = parseInt(request.params.id as string)
+        try {
+            const client = await this.clientRepository.findOne({
+                where: { id }
+            })
+            if (!client) {
+                response.status(404).json({
+                    "message": "Client not found",
+                    "object": null
+                });
+            } else {
+                const { name, address, email, password } = request.body;
+                Object.assign(client, { name, address, email, password });
+                await this.clientRepository.save(client);
+                response.status(200).json({
+                    "message": "Client updated successfully",
+                    "object": client
+                });
+            }
+        } catch (error) {
+            response.status(500).json({
+                "message": error,
+                "object": error
+            });
+        }
+    }
+
     async save(request: Request, response: Response, next: NextFunction) {
         const { name, address, email, password } = request.body;
         const client = Object.assign(new Client(), {

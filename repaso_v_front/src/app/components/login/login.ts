@@ -44,10 +44,10 @@ export class Login {
       this.message.set("Validación incorrecta");
     }
     this.visible = true;
-  }
+  }*/
   show() {
     this.messageService.add({ severity: 'info', summary: 'Info', detail: this.message() });
-  }*/
+  }
  logIn(){
     this.validate();
  }
