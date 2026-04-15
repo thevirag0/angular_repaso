@@ -31,8 +31,10 @@ export class Client implements OnInit {
 
   ngOnInit(): void {
     this.clientService.listClients().subscribe({
-      next: (clients) => {
+      next:   (clients) => {
         this.allClients.set(clients);
+      }, error: (err) => {
+        throw err;
       }
     });
   }
@@ -64,12 +66,9 @@ export class Client implements OnInit {
             next: (updatedClient) => {
               console.log('Client updated : ', updatedClient);
               this.visible = false;
-              //recargar lista
-              this.clientService.listClients().subscribe({
-                next: (clients) => {
-                  this.allClients.set(clients);
-                }
-              });
+              //actualizar SOLO el que se ha modificado
+              this.allClients.update(clients =>
+                clients.map(c => c.id === updatedClient.id ? updatedClient : c));
             },
             error: (err) => {
               console.log('Error updating: ', err);
@@ -84,11 +83,8 @@ export class Client implements OnInit {
             console.log('Client added:', newClient);
             this.visible = false;
             // Recargar lista desde backend
-            this.clientService.listClients().subscribe({
-              next: (clients) => {
-                this.allClients.set(clients);
-              }
-            });
+            //actualizar SOLO el que se ha modificado
+              this.allClients.update(clients => [...clients, newClient]);
           },
           error: (err) => {
             console.log('Error adding:', err);
@@ -102,12 +98,9 @@ export class Client implements OnInit {
           this.clientService.deleteClient(this.editClient().id).subscribe({
             next: () => {
               this.visible = false;
-              // Recargar lista desde backend
-              this.clientService.listClients().subscribe({
-                next: (clients) => {
-                  this.allClients.set(clients);
-                }
-              });
+              this.allClients.update(clients => 
+                clients.filter(c=> c.id !== this.editClient().id)
+              );
             },
             error: (err) => {
               console.log('Error deleting:', err);

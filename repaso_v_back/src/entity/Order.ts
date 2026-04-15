@@ -1,13 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumnCannotBeNullableError, PrimaryGeneratedColumn } from "typeorm"
 import { Client } from "./Client";
 import { OrderLine } from "./OrderLine";
-
-export enum OrderStatus {
-    PAID = "PAID",
-    PREPARING = "PREPARING",
-    READY = "READY",
-    SERVED = "SERVED",
-}
+import { OrderStatus } from "./OrderStatus";
 
 @Entity("orders")
 export class Order {

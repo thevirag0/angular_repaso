@@ -1,17 +1,26 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { Login } from "./components/login/login";
 import { UserList } from "./components/user-list/user-list";
 import "reflect-metadata";
 import { Client } from "./components/client/client";
+import { ButtonModule } from 'primeng/button';
+import { DrawerModule } from 'primeng/drawer';
 
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Login, UserList, Client],
+  imports: [RouterOutlet, Login, UserList, Client, ButtonModule, DrawerModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
+  private router = inject(Router);
   protected readonly title = signal('repaso_v');
+  visible = signal(false);
+
+  navegar(ruta: string){
+    this.router.navigate([ruta]);
+    this.visible.set(false);
+  }
 }

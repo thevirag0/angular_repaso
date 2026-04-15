@@ -1,6 +1,21 @@
-<router-outlet>
-</router-outlet>
-<app-login></app-login>
-<app-user-list></app-user-list>
-<br>
- <app-client></app-client> 
+
+<div class="layout-wrapper">
+<header class="top-bar flex align-items-center justify-content-between">
+    <p-button icon="pi pi-bars" (onClick)="visible.set(true)"></p-button>
+</header>
+
+<p-drawer [(visible)]="visible" header="Menú">
+    <div class="card flex justify-center">
+            <p-button label="LogIn" class="menu-item" (onClick)="navegar('/login')"/>
+    </div>
+    <div class="card flex justify-center">
+            <p-button label="User list" class="menu-item" (onClick)="navegar('/user-list')"/>
+    </div>
+    <div class="card flex justify-center">
+            <p-button label="Clients" class="menu-item" (onClick)="navegar('/clients')"/>
+    </div>
+</p-drawer>
+<main class="content-area">
+    <router-outlet></router-outlet>
+</main>
+</div>

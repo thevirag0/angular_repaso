@@ -21,5 +21,5 @@ export const AppDataSource = new DataSource({
     entities: [__dirname + "/entity/**/*.ts"],
     migrations: [],
     subscribers: [],
-})
+}) 
 export default AppDataSource; 

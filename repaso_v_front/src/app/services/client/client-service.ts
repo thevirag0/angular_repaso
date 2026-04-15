@@ -30,7 +30,7 @@ export class ClientService {
       map(res => res.object as iClient[]),
       catchError(err => {
         console.log(err.message);
-        throw err;
+        throw err; 
       })
     );   
   }
@@ -40,7 +40,7 @@ export class ClientService {
       catchError(err => {
         console.log(err.message);
         throw err;
-      })
+      }) 
     );
   }
   //añadir nuevo cliente

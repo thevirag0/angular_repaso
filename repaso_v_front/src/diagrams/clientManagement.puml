@@ -13,7 +13,7 @@ rectangle "Client Management" {
     usecase "Delete Client" as delete
 
     Admin --> view 
-    view ..> select : <<extend>> 
+    select ..>  view : <<extend>> 
     edit ..> select : <<include>>
     add ..> view : <<extend>>
     delete ..> select : <<include>>
