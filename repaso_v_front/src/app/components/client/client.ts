@@ -7,6 +7,7 @@ import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 
+//TODO: HACER BOTON DE VER FACTURAS DEL CLIENTE. QUE SELECCIONES FACTURA Y SALGAN LAS LINEAS DE LA FACTURA
 
 @Component({
   selector: 'app-client',
@@ -82,7 +83,6 @@ export class Client implements OnInit {
           next: (newClient) => {
             console.log('Client added:', newClient);
             this.visible = false;
-            // Recargar lista desde backend
             //actualizar SOLO el que se ha modificado
               this.allClients.update(clients => [...clients, newClient]);
           },
