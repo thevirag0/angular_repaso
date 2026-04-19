@@ -129,4 +129,38 @@ export class OrderController {
             });
         }
     }
+//coger pedidos de cliente
+    async ordersByClient(request: Request, response: Response, next: NextFunction) {
+        // El id llega por la URL como texto, por eso se convierte a number.
+        const clientId = parseInt(request.params.clientId as string)
+        try {
+            // Buscar un unico pedido por id.
+            const order = await this.orderRepository.find({
+                where: { client: { id: clientId } },
+                relations: {
+                client: true,
+                orderLines: true
+            }
+            })
+            if (order.length > 0) {
+                // Salida de exito cuando el recurso existe.
+                response.status(200).json({
+                    "message": "Orders retrieved successfully",
+                    "object": order
+                });
+            } else {
+                // Salida cuando no existe el pedido solicitado.
+                response.status(404).json({
+                    "message": "Orders not found",
+                    "object": null
+                });
+            }
+        } catch (error) {
+            // Salida de error inesperado.
+            response.status(500).json({
+                "message": error,
+                "object": error
+            });
+        }
+    }
 }

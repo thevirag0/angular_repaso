@@ -12,7 +12,7 @@ export class Order {
     @Column()
     orderDate: Date;
 
-    @Column()
+   @Column({ nullable: true })
     datePaid: Date;
 
     @Column()

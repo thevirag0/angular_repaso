@@ -82,6 +82,12 @@ export const Routes = [
         controller: OrderController,
         action: "all"
     },
+    {//facturas de un cliente
+        method: "get",
+        route: API + "/orders/client/:clientId",
+        controller: OrderController,
+        action: "ordersByClient"
+    },
     {
         method: "get",
         route: API + "/orders/:id",
@@ -124,6 +130,12 @@ export const Routes = [
         route: API + "/order-lines/:id",
         controller: OrderLineController,
         action: "remove"
+    },
+    {//lineas de un pedido
+        method: "get",
+        route: API + "/order-lines/order/:orderId",
+        controller: OrderLineController,
+        action: "findByOrderId"
     }
 
 ]

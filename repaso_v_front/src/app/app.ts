@@ -6,14 +6,16 @@ import "reflect-metadata";
 import { Client } from "./components/client/client";
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
+import { Invoices } from './components/invoices/invoices';
 
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Login, UserList, Client, ButtonModule, DrawerModule],
+  imports: [RouterOutlet, ButtonModule, DrawerModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
+
 export class App {
   private router = inject(Router);
   protected readonly title = signal('repaso_v');

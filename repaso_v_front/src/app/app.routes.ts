@@ -12,5 +12,9 @@ export const routes: Routes = [
     {
         path: 'clients',
         loadComponent: () => import('./components/client/client').then(m => m.Client)
+    },
+    {
+        path: 'invoices/:clientId',
+        loadComponent: () => import('./components/invoices/invoices').then(m => m.Invoices)
     }
 ];

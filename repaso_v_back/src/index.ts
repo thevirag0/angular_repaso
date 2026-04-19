@@ -12,6 +12,7 @@ AppDataSource.initialize().then(async () => {
     const app = express()
     app.use(cors());
     app.use(express.json());
+    app.use(express.static('src/public'));//linea para los archivos de imagen de productos - pedir explicacion
     // register express routes from defined application routes
     Routes.forEach(route => {
         (app as any)[route.method](route.route, (req: Request, res: Response, next: Function) => {

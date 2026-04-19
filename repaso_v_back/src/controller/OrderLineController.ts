@@ -142,4 +142,34 @@ export class OrderLineController {
             });
         }
     }
+    async findByOrderId(request: Request, response: Response, next: NextFunction) {
+        // El id llega por URL como texto; se convierte a number.
+        const id = parseInt(request.params.orderId as string)
+        try {
+            // Buscar una unica linea de pedido por id.
+            const orderLine = await this.orderLineRepository.find({
+                where: { order: { id } },
+                relations: { product: true } // relación con producto
+            })
+            if (orderLine.length > 0) {
+                // Salida de exito cuando el recurso existe.
+                response.status(200).json({
+                    message: "Order lines retrieved successfully",
+                    object: orderLine
+                });
+            } else {
+                // Salida cuando no existe la linea solicitada.
+                response.status(404).json({
+                    message: "Order lines not found",
+                    object: null
+                });
+            }
+        } catch (error) {
+            // Salida de error inesperado.
+            response.status(500).json({
+                message: error,
+                object: error
+            });
+        }
+    }
 }

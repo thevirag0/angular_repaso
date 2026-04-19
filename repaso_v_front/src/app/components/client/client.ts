@@ -1,4 +1,4 @@
-import { Component, OnInit, Signal, inject, signal, model } from '@angular/core';
+import { Component, OnInit, inject, signal, model } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { iClient } from '../../interfaces/iclient';
 import { ClientService } from '../../services/client/client-service';
@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
+import { Router } from '@angular/router';
 
 //TODO: HACER BOTON DE VER FACTURAS DEL CLIENTE. QUE SELECCIONES FACTURA Y SALGAN LAS LINEAS DE LA FACTURA
 
@@ -15,9 +16,8 @@ import { InputTextModule } from 'primeng/inputtext';
   templateUrl: './client.html',
   styleUrl: './client.css',
 })
+
 export class Client implements OnInit {
-
-
   clientService = inject(ClientService);
   allClients = signal<iClient[]>([]);
   visible: boolean = false;
@@ -29,6 +29,7 @@ export class Client implements OnInit {
   editClient = model<iClient>({ ...this.voidClient });
   mensajeVisible = model<boolean>(false);
   errorMessage = signal<string>('');
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.clientService.listClients().subscribe({
@@ -116,5 +117,9 @@ export class Client implements OnInit {
         }
         break;
     }
+  }
+
+  viewInvoices(client: iClient) { 
+    this.router.navigate(['/invoices', client.id]);
   }
 }
