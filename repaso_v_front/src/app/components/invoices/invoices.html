@@ -1,11 +1,11 @@
-
 <main class="content-area">
     <h1 class="text-center">Invoices</h1>
 </main>
 
 <div class="card">
-    <p-table [value]="allOrders()" [paginator]="true" [rows]="5" [tableStyle]="{ 'min-width': '50rem' }"
-        [rowsPerPageOptions]="[5, 10, 20]">
+    <p-table [value]="allOrders()" selectionMode="single" [(selection)]="selectedOrder"
+        (onRowSelect)="displayOrderLines();visible=true" [paginator]="true" [rows]="5"
+        [tableStyle]="{ 'min-width': '20rem' }" [rowsPerPageOptions]="[5, 10, 20]">
         <ng-template #header>
             <tr>
                 <th style="width:25%">Date</th>
@@ -15,44 +15,39 @@
             </tr>
         </ng-template>
         <ng-template #body let-order>
-            <tr>
+            <tr [pSelectableRow]="order">
                 <td>{{ order.orderDate }}</td>
                 <td>{{ order.datePaid }}</td>
                 <td>{{ order.totalPrice }} €</td>
                 <td>{{ order.status }}</td>
-                <td>
-                    <p-button label="View Lines" (click)="displayOrderLines(order)" />
-                </td>
             </tr>
         </ng-template>
     </p-table>
 </div>
 
-<p-dialog header="Invoice Details" [modal]="true" [(visible)]="visible" [style]="{ width: '50rem' }">
-    <p-table [value]="orderLines()">
-           <ng-template #header> 
-            <tr>
-                <th>Image</th>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Price</th>
-            </tr>
-            </ng-template>
-            <ng-template #body let-orderLine>
-            <tr>
-                <td>
-                    <img
-                        [src]="'http://localhost:3001/images/' + orderLine.product.image"
-                        [alt]="orderLine.product.name"
-                        width="128"
-                        height="128"
-                        style="object-fit: cover; border-radius: 8px;"
-                    />
-                </td>
-                <td>{{ orderLine.product.name }}</td>
-                <td>{{ orderLine.quantity }}</td>
-                <td>{{ orderLine.unityPrice }} €</td>
-            </tr>
-            </ng-template>
-    </p-table>
-</p-dialog>
+<h2> ORDER DETAILS </h2>
+
+<p-table [value]="orderLines()" header="Invoice Details" [style]="{ width: '50rem' }">
+    <ng-template #header>
+        <tr>
+            <th>Image</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-orderLine>
+        <tr>
+            <td>
+                <img [src]="'http://localhost:3001/images/' + orderLine.product.image" [alt]="orderLine.product.name"
+                    width="50" height="50" style="object-fit: cover; border-radius: 8px;" />
+            </td>
+            <td>{{ orderLine.product.name }}</td>
+            <td>{{ orderLine.quantity }}</td>
+            <td>{{ orderLine.unityPrice }} €</td>
+            <td>
+                <p-button icon="pi pi-pen-to-square" severity="secondary" rounded />
+            </td>
+        </tr>
+    </ng-template>
+</p-table>

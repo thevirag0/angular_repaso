@@ -8,7 +8,6 @@ import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { Router } from '@angular/router';
 
-//TODO: HACER BOTON DE VER FACTURAS DEL CLIENTE. QUE SELECCIONES FACTURA Y SALGAN LAS LINEAS DE LA FACTURA
 
 @Component({
   selector: 'app-client',
