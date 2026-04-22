@@ -16,8 +16,8 @@
         </ng-template>
         <ng-template #body let-order>
             <tr [pSelectableRow]="order">
-                <td>{{ order.orderDate }}</td>
-                <td>{{ order.datePaid }}</td>
+                <td>{{ order.orderDate | date : 'shortDate' }}</td>
+                <td>{{ order.datePaid | date : 'shortDate' }}</td>
                 <td>{{ order.totalPrice }} €</td>
                 <td>{{ order.status }}</td>
             </tr>
@@ -27,6 +27,9 @@
 
 <h2> ORDER DETAILS </h2>
 
+<p-button icon="pi pi-plus" severity="secondary" rounded (click)="newOrderLine();dialogVisible.set(true)" />
+<p-button icon="pi pi-check" severity="secondary" rounded (click)="saveChanges()" />
+<p-button icon="pi pi-times" severity="secondary" rounded (click)="cancelChanges()" />
 <p-table [value]="orderLines()" header="Invoice Details" [style]="{ width: '50rem' }">
     <ng-template #header>
         <tr>
@@ -36,18 +39,85 @@
             <th>Price</th>
         </tr>
     </ng-template>
-    <ng-template #body let-orderLine>
+    <ng-template #body let-orderLine let-rowIndex="rowIndex">
+
         <tr>
             <td>
                 <img [src]="'http://localhost:3001/images/' + orderLine.product.image" [alt]="orderLine.product.name"
                     width="50" height="50" style="object-fit: cover; border-radius: 8px;" />
             </td>
             <td>{{ orderLine.product.name }}</td>
-            <td>{{ orderLine.quantity }}</td>
-            <td>{{ orderLine.unityPrice }} €</td>
             <td>
-                <p-button icon="pi pi-pen-to-square" severity="secondary" rounded />
+                <label for="quantity" class="font-semibold w-24"></label>
+                <input pInputText id="quantity" class="flex-auto" [readonly]="rowIndex!=numFila()" autocomplete="off"
+                    [(ngModel)]="orderLine.quantity" />
+            </td>
+            <td>
+                <label for="unityPrice" class="font-semibold w-24"></label>
+                <input pInputText id="unityPrice" class="flex-auto" [readonly]="rowIndex!=numFila()" autocomplete="off"
+                    [(ngModel)]="orderLine.unityPrice" />
+            </td>
+            <td>
+                <p-button icon="pi pi-pen-to-square" severity="secondary" rounded
+                    (click)="editSelectedOrderLine(orderLine, rowIndex)" />
             </td>
         </tr>
     </ng-template>
 </p-table>
+
+<div class="card flex justify-center">
+    <p-dialog header="New order line" [modal]="true" [(visible)]="dialogVisible" [style]="{ width: '65rem' }">
+        <div class="card">
+            <p-table #dt2 [value]="allProducts()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+                [paginator]="true" [globalFilterFields]="['name']" [tableStyle]="{ 'min-width': '50rem' }">
+                <ng-template #caption>
+                    <div class="flex">
+                        <p-iconfield iconPosition="left" class="ml-auto">
+                            <p-inputicon>
+                                <i class="pi pi-search"></i>
+                            </p-inputicon>
+                            <input pInputText type="text" (input)="dt2.filterGlobal($event.target.value, 'contains')"
+                                placeholder="Search product by name" />
+                        </p-iconfield>
+                    </div>
+                </ng-template>
+                <ng-template #header>
+                    <tr>
+                        <th style="width:22%">Image</th>
+                        <th style="width:22%">Name</th>
+                        <th style="width:22%">Description</th>
+                        <th style="width:22%">Price</th>
+                        <th style="width:22%">Quantity</th>
+                    </tr>
+                </ng-template>
+                <ng-template #body let-product let-rowIndex="rowIndex">
+                    <tr>
+                        <td>
+                            <img [src]="'http://localhost:3001/images/' + product.image" [alt]="product.name" width="40"
+                                height="40" style="object-fit: cover; border-radius: 8px;" />
+                        </td>
+                        <td>
+                            {{ product.name }}
+
+                        </td>
+                        <td>
+                            {{ product.description }}
+
+                        </td>
+                        <td>
+                            {{ product.sellPrice }} €
+
+                        </td>
+                        <td>
+                            <p-button icon="pi pi-plus" severity="secondary" rounded
+                                (click)="addProductToOrderLine(product, rowIndex)" />
+                        </td>
+
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        <hr>
+
+    </p-dialog>
+</div>

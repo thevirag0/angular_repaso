@@ -33,5 +33,36 @@ export class InvoiceService {
       })
     );
   }
-  
+
+  //modificar orderline
+  updateOrderLine(id: number, orderLine : iOrderLine): Observable<iOrderLine> {
+      return this.http.put<RespostaBack>(`${this.baseUrlOrderLines}/${id}`, orderLine).pipe(
+        map(res => res.object as iOrderLine),
+        catchError(err => {
+          console.log(err.message);
+          throw err;
+        })
+      );
+    }
+
+
+    addOrderLine(id:number, orderLine : iOrderLine): Observable<iOrderLine> {
+       return this.http.post<RespostaBack>(this.baseUrlOrderLines, orderLine).pipe(
+        map(res => res.object as iOrderLine),
+        catchError(err => {
+          console.log(err.message);
+          throw err;
+        })
+      );
+    }
+
+    deleteOrderLine(id:number, orderLine : iOrderLine): Observable<iOrderLine> {
+       return this.http.delete<RespostaBack>(`${this.baseUrlOrderLines}/${id}`).pipe(
+        map(res => res.object as iOrderLine),
+        catchError(err => {
+          console.log(err.message);
+          throw err;
+        })
+      );
+    }
 }

@@ -172,4 +172,57 @@ export class OrderLineController {
             });
         }
     }
+
+    async update(request: Request, response: Response, next: NextFunction) {
+        // Extraer datos esperados desde el body.
+        const { unityPrice, quantity, productId, orderId } = request.body;
+        try {
+            // Paso 1: validar que el pedido existe (FK order_id).
+            const order = await this.orderRepository.findOneBy({ id: orderId });
+
+            if (!order) {
+                // Salida #1: pedido no encontrado.
+                response.status(404).json({
+                    message: "Order not found",
+                    object: null
+                });
+                return;
+            }
+
+            // Paso 2: validar que el producto existe (FK product_id).
+            const product = await this.productRepository.findOneBy({ id: productId });
+
+            if (!product) {
+                // Salida #2: producto no encontrado.
+                response.status(404).json({
+                    message: "Product not found",
+                    object: null
+                });
+                return;
+            }
+
+            // Paso 3: construir la entidad con campos propios + relaciones.
+            const orderLine = Object.assign(new OrderLine(), {
+                unityPrice,
+                quantity,
+                order,
+                product
+            });
+
+            // Paso 4: guardar en base de datos.
+            await this.orderLineRepository.save(orderLine);
+
+            // Salida de exito (recurso creado).
+            response.status(201).json({
+                message: "Order line saved successfully",
+                object: orderLine
+            });
+        } catch (error) {
+            // Salida de error inesperado.
+            response.status(500).json({
+                message: error,
+                object: error
+            });
+        }
+    }
 }
