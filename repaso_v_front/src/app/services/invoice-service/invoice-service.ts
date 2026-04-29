@@ -11,7 +11,7 @@ import { iOrderLine } from '../../interfaces/iorderline';
 export class InvoiceService {
   private http = inject(HttpClient);
   private baseUrlOrders = "http://localhost:3001/api/facturator/v1/orders";
-    private baseUrlOrderLines = "http://localhost:3001/api/facturator/v1/order-lines";
+  private baseUrlOrderLines = "http://localhost:3001/api/facturator/v1/order-lines";
 
 
   //metodo para ver facturas
@@ -35,34 +35,34 @@ export class InvoiceService {
   }
 
   //modificar orderline
-  updateOrderLine(id: number, orderLine : iOrderLine): Observable<iOrderLine> {
-      return this.http.put<RespostaBack>(`${this.baseUrlOrderLines}/${id}`, orderLine).pipe(
-        map(res => res.object as iOrderLine),
-        catchError(err => {
-          console.log(err.message);
-          throw err;
-        })
-      );
-    }
+  updateOrderLine(id: number, orderLine: iOrderLine): Observable<iOrderLine> {
+    return this.http.put<RespostaBack>(`${this.baseUrlOrderLines}/${id}`, orderLine).pipe(
+      map(res => res.object as iOrderLine),
+      catchError(err => {
+        console.log(err.message);
+        throw err;
+      })
+    );
+  }
 
 
-    addOrderLine(id:number, orderLine : iOrderLine): Observable<iOrderLine> {
-       return this.http.post<RespostaBack>(this.baseUrlOrderLines, orderLine).pipe(
-        map(res => res.object as iOrderLine),
-        catchError(err => {
-          console.log(err.message);
-          throw err;
-        })
-      );
-    }
+  addOrderLine(info: any): Observable<iOrderLine> {
+    return this.http.post<RespostaBack>(this.baseUrlOrderLines, info).pipe(
+      map(res => res.object as iOrderLine),
+      catchError(err => {
+        console.log(err.message);
+        throw err;
+      })
+    );
+  }
 
-    deleteOrderLine(id:number, orderLine : iOrderLine): Observable<iOrderLine> {
-       return this.http.delete<RespostaBack>(`${this.baseUrlOrderLines}/${id}`).pipe(
-        map(res => res.object as iOrderLine),
-        catchError(err => {
-          console.log(err.message);
-          throw err;
-        })
-      );
-    }
+  deleteOrderLine(id: number): Observable<iOrderLine> {
+    return this.http.delete<RespostaBack>(`${this.baseUrlOrderLines}/${id}`).pipe(
+      map(res => res.object as iOrderLine),
+      catchError(err => {
+        console.log(err.message);
+        throw err;
+      })
+    );
+  }
 }

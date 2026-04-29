@@ -30,7 +30,7 @@
 <p-button icon="pi pi-plus" severity="secondary" rounded (click)="newOrderLine();dialogVisible.set(true)" />
 <p-button icon="pi pi-check" severity="secondary" rounded (click)="saveChanges()" />
 <p-button icon="pi pi-times" severity="secondary" rounded (click)="cancelChanges()" />
-<p-table [value]="orderLines()" header="Invoice Details" [style]="{ width: '50rem' }">
+<p-table [value]="orderLines()" header="Invoice Details" [style]="{ width: '70rem' }">
     <ng-template #header>
         <tr>
             <th>Image</th>
@@ -61,6 +61,10 @@
                 <p-button icon="pi pi-pen-to-square" severity="secondary" rounded
                     (click)="editSelectedOrderLine(orderLine, rowIndex)" />
             </td>
+            <td>
+                <p-button icon="pi pi-times" severity="secondary" rounded
+                    (click)="deleteOrderLine(orderLine, rowIndex)" />
+            </td>
         </tr>
     </ng-template>
 </p-table>
@@ -87,7 +91,7 @@
                         <th style="width:22%">Name</th>
                         <th style="width:22%">Description</th>
                         <th style="width:22%">Price</th>
-                        <th style="width:22%">Quantity</th>
+                        <th style="width:22%"> </th>
                     </tr>
                 </ng-template>
                 <ng-template #body let-product let-rowIndex="rowIndex">
@@ -112,6 +116,7 @@
                             <p-button icon="pi pi-plus" severity="secondary" rounded
                                 (click)="addProductToOrderLine(product, rowIndex)" />
                         </td>
+
 
                     </tr>
                 </ng-template>

@@ -13,6 +13,7 @@ import { iProduct } from '../../interfaces/iproduct';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { CommonModule } from '@angular/common';
+import { ToastClasses } from 'primeng/toast';
 
 
 @Component({
@@ -22,8 +23,6 @@ import { CommonModule } from '@angular/common';
   styleUrl: './invoices.css',
 })
 export class Invoices implements OnInit {
-
-
 
   orderService = inject(InvoiceService);
   productService = inject(ProductService);
@@ -64,7 +63,6 @@ export class Invoices implements OnInit {
     if (order) {
       this.orderService.getOrderLines(order.id).subscribe({
         next: (orderLines) => {
-          // Aquí puedes manejar las líneas de la orden, por ejemplo, mostrándolas en un diálogo
           console.log(orderLines);
           this.orderLines.set(orderLines);
           this.visible = true; // Muestra el diálogo con las líneas de la orden
@@ -84,11 +82,13 @@ export class Invoices implements OnInit {
   }
 
   modifyOrderLine(orderline: iOrderLine) {
-    this.orderService.updateOrderLine(this.editLine().id, this.editLine()).subscribe({
+    this.orderService.updateOrderLine(orderline.id, orderline).subscribe({
       next: (updatedLine) => {
-        console.log('Client updated : ', updatedLine);
+        console.log('Invoice updated : ', updatedLine);
         this.orderLines.update(lines =>
           lines.map(l => l.id === updatedLine.id ? updatedLine : l));
+        this.updateTotalPrice();
+        this.numFila.set(-1);
       },
       error: (err) => {
         console.log('Error updating line: ', err);
@@ -103,7 +103,52 @@ export class Invoices implements OnInit {
   }
 
   addProductToOrderLine(product: iProduct, indexRow: number) {
-    this.selectedOrder.
+    const order = this.selectedOrder();
+    if (!order) {
+      console.log('Error retrieving order')
+    } else {
+      this.editLine.set({
+        id: 0,
+        quantity: 1,
+        unityPrice: product.sellPrice,
+        order: order,
+        product: product,
+      });
+      const pasar = {
+        orderId: order.id,
+        productId: product.id,
+        quantity: 1,
+        unityPrice: product.sellPrice
+      }
+
+      this.orderService.addOrderLine(pasar).subscribe({
+        next: (newLine) => {
+          this.orderLines.update(lines => [...lines, newLine]);
+          this.updateTotalPrice();
+          this.dialogVisible.set(false);
+
+        },
+        error: (err) => {
+          console.log('Error adding new line to order: ', err);
+        }
+      });
+    }
+  };
+
+  deleteOrderLine(orderLine: iOrderLine, rowIndex: number) {
+    this.orderService.deleteOrderLine(orderLine.id).subscribe({
+      next: (deletedLine) => {
+        this.orderLines.update(lines =>
+          lines.filter(l => l.id !== orderLine.id)
+
+        );
+        this.updateTotalPrice();
+
+      },
+      error: (err) => {
+        console.log('Error deleting line: ', err);
+      }
+    })
   }
 
   listProducts() {
@@ -118,10 +163,38 @@ export class Invoices implements OnInit {
   }
 
   cancelChanges() {
-    throw new Error('Method not implemented.');
+    const index = this.numFila();
+    if (index < 0 || index >= this.orderLines().length) return;
+    const originalLine = this.editLine();
+    this.orderLines.update(lines =>
+      lines.map((l, i) => (i === index ? { ...originalLine } : l))
+    );
+    this.numFila.set(-1);
+    this.isReadOnly.set(true);
+    this.updateTotalPrice();
   }
+
   saveChanges() {
-    throw new Error('Method not implemented.');
+    const index = this.numFila();
+    if (index < 0 || index >= this.orderLines().length) return;
+    const currentLine = this.orderLines()[index];
+    this.modifyOrderLine(currentLine);
+    this.updateTotalPrice();
+  }
+
+  updateTotalPrice() {
+    let newTotal = 0;
+    // const newtotal;
+    this.orderLines().forEach((line, index) => {
+      newTotal += line.quantity * line.unityPrice;
+    })
+    const order = this.selectedOrder();
+    if (order) {
+      this.selectedOrder.set({ ...order, totalPrice: newTotal });
+      this.allOrders.update(orders =>
+        orders.map(o => o.id === order.id ? { ...o, totalPrice: newTotal } : o)
+      );
+    }
   }
 }
 
