@@ -12,7 +12,7 @@ export class Order {
     @Column()
     orderDate: Date;
 
-   @Column({ nullable: true })
+    @Column({ nullable: true })
     datePaid: Date;
 
     @Column()
@@ -29,6 +29,6 @@ export class Order {
     @JoinColumn({ name: "client_id" })
     client: Client;
 
-    @OneToMany(() => OrderLine, (orderLine) => orderLine.order, { cascade: true })
+    @OneToMany(() => OrderLine, (orderLine) => orderLine.order, { cascade: true, orphanedRowAction: "delete" })
     orderLines: OrderLine[];
 }

@@ -98,10 +98,10 @@ export class Invoices implements OnInit {
 
   newOrderLine() {
     this.dialogVisible.set(true);
-    this.orderService.addOrderLine;
+    //this.orderService.addOrderLine;
     this.listProducts();
   }
-
+  //añade el producto seleccionado en el dialoga, a la linia de orden
   addProductToOrderLine(product: iProduct, indexRow: number) {
     const order = this.selectedOrder();
     if (!order) {
@@ -114,41 +114,24 @@ export class Invoices implements OnInit {
         order: order,
         product: product,
       });
+
       const pasar = {
-        orderId: order.id,
-        productId: product.id,
         quantity: 1,
-        unityPrice: product.sellPrice
-      }
+        unityPrice: product.sellPrice,
+        order: order,
+        product: product
+      } as iOrderLine;
+      this.orderLines.update(lines => [...lines, pasar]);
+      this.updateTotalPrice();
+      this.dialogVisible.set(false);
 
-      this.orderService.addOrderLine(pasar).subscribe({
-        next: (newLine) => {
-          this.orderLines.update(lines => [...lines, newLine]);
-          this.updateTotalPrice();
-          this.dialogVisible.set(false);
-
-        },
-        error: (err) => {
-          console.log('Error adding new line to order: ', err);
-        }
-      });
     }
   };
 
   deleteOrderLine(orderLine: iOrderLine, rowIndex: number) {
-    this.orderService.deleteOrderLine(orderLine.id).subscribe({
-      next: (deletedLine) => {
-        this.orderLines.update(lines =>
-          lines.filter(l => l.id !== orderLine.id)
-
-        );
-        this.updateTotalPrice();
-
-      },
-      error: (err) => {
-        console.log('Error deleting line: ', err);
-      }
-    })
+    this.orderLines.update(lines =>
+      lines.filter(l => l.id !== orderLine.id)
+    );
   }
 
   listProducts() {
@@ -195,6 +178,7 @@ export class Invoices implements OnInit {
         orders.map(o => o.id === order.id ? { ...o, totalPrice: newTotal } : o)
       );
     }
+    this.orderService.
   }
 }
 
