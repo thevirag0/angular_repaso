@@ -82,6 +82,12 @@ export const Routes = [
         controller: OrderController,
         action: "all"
     },
+    {
+        method: "put",
+        route: API +"/orders/:id",
+        controller: OrderController,
+        action: "updateOrder"
+    },
     {//facturas de un cliente
         method: "get",
         route: API + "/orders/client/:clientId",

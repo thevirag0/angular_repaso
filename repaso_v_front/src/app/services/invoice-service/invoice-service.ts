@@ -24,6 +24,7 @@ export class InvoiceService {
       })
     );
   }
+  /*
   getOrderLines(orderId: number): Observable<iOrderLine[]> {
     return this.http.get<RespostaBack>(`${this.baseUrlOrderLines}/order/${orderId}`).pipe(
       map(res => res.object as iOrderLine[]),
@@ -59,6 +60,16 @@ export class InvoiceService {
   deleteOrderLine(id: number): Observable<iOrderLine> {
     return this.http.delete<RespostaBack>(`${this.baseUrlOrderLines}/${id}`).pipe(
       map(res => res.object as iOrderLine),
+      catchError(err => {
+        console.log(err.message);
+        throw err;
+      })
+    );
+  }
+*/
+  updateOrder(id: number, order: iOrder): Observable<iOrder> {
+    return this.http.put<RespostaBack>(`${this.baseUrlOrders}/${id}`, order).pipe(
+      map(res => res.object as iOrder),
       catchError(err => {
         console.log(err.message);
         throw err;

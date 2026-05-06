@@ -1,5 +1,6 @@
 <main class="content-area">
     <h1 class="text-center">Invoices</h1>
+    <h2 class="text-center"> Client: {{ clientName() }} </h2>
 </main>
 
 <div class="card">
@@ -27,9 +28,6 @@
 
 <h2> ORDER DETAILS </h2>
 
-<p-button icon="pi pi-plus" severity="secondary" rounded (click)="newOrderLine();dialogVisible.set(true)" />
-<p-button icon="pi pi-check" severity="secondary" rounded (click)="saveChanges()" />
-<p-button icon="pi pi-times" severity="secondary" rounded (click)="cancelChanges()" />
 <p-table [value]="orderLines()" header="Invoice Details" [style]="{ width: '70rem' }">
     <ng-template #header>
         <tr>
@@ -68,6 +66,10 @@
         </tr>
     </ng-template>
 </p-table>
+<p-button icon="pi pi-plus" severity="primary" label="Add Product" rounded
+    (click)="newOrderLine();dialogVisible.set(true)" />
+<p-button icon="pi pi-check" severity="success" label="Save changes" rounded (click)="confirmEdit()" />
+<p-button icon="pi pi-times" severity="danger" label="Cancel changes" rounded (click)="cancelChanges()" />
 
 <div class="card flex justify-center">
     <p-dialog header="New order line" [modal]="true" [(visible)]="dialogVisible" [style]="{ width: '65rem' }">

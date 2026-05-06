@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import { Order } from "../entity/Order"
 import { Client } from "../entity/Client"
 import AppDataSource from '../data-source';
+import { OrderLine } from "../entity/OrderLine";
 
 export class OrderController {
     private orderRepository = AppDataSource.getRepository(Order)
@@ -58,12 +59,12 @@ export class OrderController {
 
     async save(request: Request, response: Response, next: NextFunction) {
         // Extraer los datos esperados desde el body de la peticion.
-        const { orderDate, datePaid, totalPrice, status, clientId } = request.body;
+        const { orderDate, datePaid, totalPrice, status, client, orderLines } = request.body;
         try {
             // Paso 1: validar integridad relacional -> un pedido necesita un cliente existente.
-            const client = await this.clientRepository.findOneBy({ id: clientId });
+            const clientFound = await this.clientRepository.findOneBy({ id: client.id });
 
-            if (!client) {
+            if (!clientFound) {
                 // Salida #1: el cliente no existe, se responde 404 y se termina.
                 response.status(404).json({
                     message: "Client not found",
@@ -79,7 +80,8 @@ export class OrderController {
                 datePaid,
                 totalPrice,
                 status,
-                client
+                client: clientFound,
+                orderLines: orderLines // Si se envian las lineas de pedido en el body, se asignan directamente. Sino, se pueden crear aparte y asignar luego.
             });
 
             // Paso 3: persistir en base de datos.
@@ -130,11 +132,14 @@ export class OrderController {
         }
     }
     async updateOrder(request: Request, response: Response, next: NextFunction) {
-        const id = parseInt(request.params.id as string)
+        const id = parseInt(request.params.id as string, 10);
+        const order: Order = request.body;
         try {
             // Verificar primero si el pedido existe.
-            const orderToUpdate = await this.orderRepository.findOneBy({ id })
-
+            const orderToUpdate = await this.orderRepository.findOne({
+                where: { id },
+                relations: { orderLines: true }
+            })
             if (!orderToUpdate) {
                 // Salida cuando el recurso a modificar no existe.
                 response.status(404).json({
@@ -143,9 +148,19 @@ export class OrderController {
                 });
             } else {
                 // Modificación fisico del registro y salida de exito.
-                await this.orderRepository.update(id, orderToUpdate)
+                orderToUpdate.orderDate = order.orderDate;
+                orderToUpdate.datePaid = order.datePaid;
+                orderToUpdate.totalPrice = order.totalPrice;
+                orderToUpdate.status = order.status;
+
+                orderToUpdate.orderLines = order.orderLines.map(ol => {
+                    // Si tiene ID, es una existente que estamos editando
+                    // Si no tiene ID, TypeORM la crea como nueva
+                    return Object.assign(new OrderLine(), ol);
+                });
+                await this.orderRepository.save(orderToUpdate)
                 response.status(200).json({
-                    "message": "Order removed successfully",
+                    "message": "Order updated successfully",
                     "object": orderToUpdate
                 });
             }
@@ -173,7 +188,9 @@ export class OrderController {
                 where: { client: { id: clientId } },
                 relations: {
                     client: true,
-                    orderLines: true
+                    orderLines: {
+                        product: true
+                    }
                 }
             })
 

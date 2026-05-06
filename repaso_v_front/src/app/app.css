@@ -1,0 +1,206 @@
+/* Elegant and Minimalist Palette */
+
+:root {
+  --primary-bg: #f8f7f4;
+  --secondary-bg: #ffffff;
+  --accent-color: #4a5568;
+  --text-primary: #2d3748;
+  --text-secondary: #718096;
+  --border-color: #e2e8f0;
+  --hover-color: #edf2f7;
+}
+
+/* Global Styles */
+* {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--accent-color);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+p, span, label {
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* PrimeNG Components Styling */
+
+/* Buttons */
+.p-button {
+  background-color: var(--accent-color) !important;
+  border: 1px solid var(--accent-color) !important;
+  color: var(--secondary-bg) !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.p-button:hover {
+  background-color: var(--text-primary) !important;
+  border-color: var(--text-primary) !important;
+}
+
+.p-button-text {
+  color: var(--accent-color) !important;
+}
+
+/* Input Fields */
+.p-inputtext,
+.p-input-icon-left > input,
+.p-input-icon-right > input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  background-color: var(--secondary-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: 4px !important;
+  padding: 8px 12px !important;
+}
+
+.p-inputtext:focus,
+input:focus,
+textarea:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px rgba(74, 85, 104, 0.1) !important;
+  outline: none !important;
+}
+
+/* Labels */
+label {
+  color: var(--text-primary) !important;
+  font-weight: 500;
+}
+
+/* Cards */
+.p-card {
+  background-color: var(--secondary-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.p-card-body {
+  color: var(--text-primary) !important;
+}
+
+/* Tables */
+.p-datatable {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background-color: var(--hover-color) !important;
+  color: var(--accent-color) !important;
+  font-weight: 600 !important;
+  border-color: var(--border-color) !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: var(--hover-color) !important;
+}
+
+/* Dropdowns */
+.p-dropdown {
+  background-color: var(--secondary-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: 4px !important;
+}
+
+.p-dropdown-panel {
+  background-color: var(--secondary-bg) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.p-dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+.p-dropdown-item:hover {
+  background-color: var(--hover-color) !important;
+}
+
+/* Dialog/Modal */
+.p-dialog {
+  border-radius: 6px !important;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.p-dialog-header {
+  background-color: var(--hover-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.p-dialog-content {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Panels */
+.p-panel {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+}
+
+.p-panel-header {
+  background-color: var(--hover-color) !important;
+  border-color: var(--border-color) !important;
+}
+
+.p-panel-content {
+  background-color: var(--secondary-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Navigation/Sidebar */
+.p-sidebar {
+  background-color: var(--secondary-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Checkboxes and Radio Buttons */
+.p-checkbox .p-checkbox-box,
+.p-radiobutton .p-radiobutton-box {
+  border-color: var(--border-color) !important;
+  background-color: var(--secondary-bg) !important;
+}
+
+.p-checkbox .p-checkbox-box.p-highlight,
+.p-radiobutton .p-radiobutton-box.p-highlight {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+/* Messages and Alerts */
+.p-message {
+  border-radius: 4px !important;
+}
+
+.p-message-text {
+  color: var(--text-primary) !important;
+}
+
+/* Spacing and Layout */
+app-root {
+  display: block;
+  background-color: var(--primary-bg);
+}
