@@ -1,0 +1,32 @@
+@startuml
+
+skinparam style strictuml
+
+actor User as U
+box "Sistema"
+    participant LoginComponent as LC 
+    participant LoginService as LS
+    participant Backend as BE
+
+    loop no valid input
+        U-> LC : mail + password
+        activate LC
+        
+            LC -> LC : validateInput()
+            alt input invalid 
+                LC -> U : show error message
+                end alt
+    end
+        LC-> LS : checkCredentials(mail, password)
+        activate LS
+        LS -> BE : GET /api/login/:mail/:password
+        activate BE
+        BE --> LS : user (user data + token)
+        deactivate BE
+        LS --> LC : user
+        LC --> U  : Login successful + token (oculto) 
+    deactivate LS 
+
+end box
+
+@enduml
