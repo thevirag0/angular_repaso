@@ -3,28 +3,62 @@
     <h2 class="text-center"> Client: {{ clientName() }} </h2>
 </main>
 
-<div class="card">
-    <p-table [value]="allOrders()" selectionMode="single" [(selection)]="selectedOrder"
-        (onRowSelect)="displayOrderLines();visible=true" [paginator]="true" [rows]="5"
-        [tableStyle]="{ 'min-width': '20rem' }" [rowsPerPageOptions]="[5, 10, 20]">
-        <ng-template #header>
-            <tr>
-                <th style="width:25%">Date</th>
-                <th style="width:25%">Payment Date</th>
-                <th style="width:25%">Total Price</th>
-                <th style="width:25%">Status</th>
-            </tr>
-        </ng-template>
-        <ng-template #body let-order>
-            <tr [pSelectableRow]="order">
-                <td>{{ order.orderDate | date : 'shortDate' }}</td>
-                <td>{{ order.datePaid | date : 'shortDate' }}</td>
-                <td>{{ order.totalPrice }} €</td>
-                <td>{{ order.status }}</td>
-            </tr>
-        </ng-template>
-    </p-table>
-</div>
+
+<p-tabs [(value)]="0" <p-tablist>
+    <p-tab value="0">Orders</p-tab>
+    <p-tab value="1">Invoices</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+        <p-tabpanel value="0">
+            <div class="card">
+                <p-table [value]="activeOrders()" selectionMode="single" [(selection)]="selectedActiveOrder"
+                    (onRowSelect)="onActiveOrderSelect()" [paginator]="true" [rows]="5"
+                    [tableStyle]="{ 'min-width': '20rem' }" [rowsPerPageOptions]="[5, 10, 20]">
+                    <ng-template #header>
+                        <tr>
+                            <th style="width:25%">Date</th>
+                            <th style="width:25%">Payment Date</th>
+                            <th style="width:25%">Total Price</th>
+                            <th style="width:25%">Status</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-order>
+                        <tr [pSelectableRow]="order">
+                            <td>{{ order.orderDate | date : 'shortDate' }}</td>
+                            <td>{{ order.datePaid | date : 'shortDate' }}</td>
+                            <td>{{ order.totalPrice }} €</td>
+                            <td>{{ order.status }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </p-tabpanel>
+        <p-tabpanel value="1">
+            <div class="card">
+                <p-table [value]="paidOrders()" selectionMode="single" [(selection)]="selectedPaidOrder"
+                    (onRowSelect)="onPaidOrderSelect()" [paginator]="true" [rows]="5"
+                    [tableStyle]="{ 'min-width': '20rem' }" [rowsPerPageOptions]="[5, 10, 20]">
+                    <ng-template #header>
+                        <tr>
+                            <th style="width:25%">Date</th>
+                            <th style="width:25%">Payment Date</th>
+                            <th style="width:25%">Total Price</th>
+                            <th style="width:25%">Status</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template #body let-order>
+                        <tr [pSelectableRow]="order">
+                            <td>{{ order.orderDate | date : 'shortDate' }}</td>
+                            <td>{{ order.datePaid | date : 'shortDate' }}</td>
+                            <td>{{ order.totalPrice }} €</td>
+                            <td>{{ order.status }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </p-tabpanel>
+    </p-tabpanels>
+</p-tabs>
 
 <h2> ORDER DETAILS </h2>
 
@@ -47,29 +81,33 @@
             <td>{{ orderLine.product.name }}</td>
             <td>
                 <label for="quantity" class="font-semibold w-24"></label>
-                <input pInputText id="quantity" class="flex-auto" [readonly]="rowIndex!=numFila()" autocomplete="off"
+                <input pInputText id="quantity" class="flex-auto"
+                    [disabled]="rowIndex!=numFila() || isSelectedOrderPaid()" autocomplete="off"
                     [(ngModel)]="orderLine.quantity" />
             </td>
             <td>
                 <label for="unityPrice" class="font-semibold w-24"></label>
-                <input pInputText id="unityPrice" class="flex-auto" [readonly]="rowIndex!=numFila()" autocomplete="off"
+                <input pInputText id="unityPrice" class="flex-auto"
+                    [disabled]="rowIndex!=numFila() || isSelectedOrderPaid()" autocomplete=" off"
                     [(ngModel)]="orderLine.unityPrice" />
             </td>
             <td>
                 <p-button icon="pi pi-pen-to-square" severity="secondary" rounded
-                    (click)="editSelectedOrderLine(orderLine, rowIndex)" />
+                    (click)="editSelectedOrderLine(orderLine, rowIndex)" [disabled]="isSelectedOrderPaid()" />
             </td>
             <td>
-                <p-button icon="pi pi-times" severity="secondary" rounded
-                    (click)="deleteOrderLine(orderLine, rowIndex)" />
+                <p-button icon="pi pi-times" severity="secondary" rounded (click)="deleteOrderLine(orderLine, rowIndex)"
+                    [disabled]="isSelectedOrderPaid()" />
             </td>
         </tr>
     </ng-template>
 </p-table>
-<p-button icon="pi pi-plus" severity="primary" label="Add Product" rounded
+<p-button icon="pi pi-plus" severity="primary" label="Add Product" [disabled]="isSelectedOrderPaid()" rounded
     (click)="newOrderLine();dialogVisible.set(true)" />
-<p-button icon="pi pi-check" severity="success" label="Save changes" rounded (click)="confirmEdit()" />
-<p-button icon="pi pi-times" severity="danger" label="Cancel changes" rounded (click)="cancelChanges()" />
+<p-button icon="pi pi-check" severity="success" label="Save changes" rounded (click)="confirmEdit()"
+    [disabled]="isSelectedOrderPaid()" />
+<p-button icon="pi pi-times" severity="danger" label="Cancel changes" rounded (click)="cancelChanges()"
+    [disabled]="isSelectedOrderPaid()" />
 
 <div class="card flex justify-center">
     <p-dialog header="New order line" [modal]="true" [(visible)]="dialogVisible" [style]="{ width: '65rem' }">
