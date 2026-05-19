@@ -1,8 +1,11 @@
 <main class="content-area">
     <h1 class="text-center">Invoices</h1>
-    <h2 class="text-center"> Client: {{ clientName() }} </h2>
+    <h2 class="text-center"> Client: {{ currentClient()?.name }} </h2>
 </main>
 
+<div style="margin-bottom: 1rem;">
+    <p-button icon="pi pi-shopping-cart" label="New Order" severity="info" (click)="openNewOrderDialog()"></p-button>
+</div>
 
 <p-tabs [(value)]="activeTab">
     <p-tablist>
@@ -110,6 +113,64 @@
 <p-button icon="pi pi-times" severity="danger" label="Cancel changes" rounded (click)="cancelChanges()"
     [disabled]="isSelectedOrderPaid()" />
 
+<div class="card flex justify-center">
+    <p-dialog header="New order line" [modal]="true" [(visible)]="dialogVisible" [style]="{ width: '65rem' }">
+        <div class="card">
+            <p-table #dt2 [value]="allProducts()" dataKey="id" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+                [paginator]="true" [globalFilterFields]="['name']" [tableStyle]="{ 'min-width': '50rem' }">
+                <ng-template #caption>
+                    <div class="flex">
+                        <p-iconfield iconPosition="left" class="ml-auto">
+                            <p-inputicon>
+                                <i class="pi pi-search"></i>
+                            </p-inputicon>
+                            <input pInputText type="text" (input)="dt2.filterGlobal($event.target.value, 'contains')"
+                                placeholder="Search product by name" />
+                        </p-iconfield>
+                    </div>
+                </ng-template>
+                <ng-template #header>
+                    <tr>
+                        <th style="width:22%">Image</th>
+                        <th style="width:22%">Name</th>
+                        <th style="width:22%">Description</th>
+                        <th style="width:22%">Price</th>
+                        <th style="width:22%"> </th>
+                    </tr>
+                </ng-template>
+                <ng-template #body let-product let-rowIndex="rowIndex">
+                    <tr>
+                        <td>
+                            <img [src]="'http://localhost:3001/images/' + product.image" [alt]="product.name" width="40"
+                                height="40" style="object-fit: cover; border-radius: 8px;" />
+                        </td>
+                        <td>
+                            {{ product.name }}
+
+                        </td>
+                        <td>
+                            {{ product.description }}
+
+                        </td>
+                        <td>
+                            {{ product.sellPrice }} €
+
+                        </td>
+                        <td>
+                            <p-button icon="pi pi-plus" severity="secondary" rounded
+                                (click)="addProductToOrderLine(product, rowIndex)" />
+                        </td>
+
+
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        <hr>
+
+    </p-dialog>
+</div>
+<!-- DIALOGO PARA NUEVA ORDER -->
 <div class="card flex justify-center">
     <p-dialog header="New order line" [modal]="true" [(visible)]="dialogVisible" [style]="{ width: '65rem' }">
         <div class="card">

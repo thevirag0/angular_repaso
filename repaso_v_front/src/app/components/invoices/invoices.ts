@@ -15,6 +15,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { CommonModule } from '@angular/common';
 import { ClientService } from '../../services/client/client-service';
 import { TabsModule } from 'primeng/tabs';
+import { iClient } from '../../interfaces/iclient';
 
 
 @Component({
@@ -40,13 +41,13 @@ export class Invoices implements OnInit {
   isReadOnly = signal<boolean>(true);
   numFila = signal<number>(-1);
   selectedProduct = model<iProduct>();
-  clientName = signal<string>('');
   activeTab = model<string>("0");
   voidOrderLine: iOrderLine = { id: 0, unityPrice: 0, quantity: 0, product: null as any, order: null as any };
   editLine = model<iOrderLine>({ ...this.voidOrderLine });
   dialogVisible = signal<boolean>(false);
   selectedActiveOrder = model<iOrder>();
   selectedPaidOrder = model<iOrder>();
+  currentClient = signal<iClient | null>(null);
 
   constructor() {
     effect(() => {
@@ -80,7 +81,7 @@ export class Invoices implements OnInit {
         if (!client) {
           console.log('Client not found.');
         } else {
-          this.clientName.set(client.name);
+          this.currentClient.set(client);
         }
       }
     });
@@ -89,15 +90,6 @@ export class Invoices implements OnInit {
         if (orders.length > 0) {
           this.allOrders.set(orders);
           this.classifyOrders();
-          if (this.activeOrders().length > 0) {
-            this.selectedActiveOrder.set(this.activeOrders()[0]);
-            this.displayOrderLines(this.activeOrders()[0]);
-
-          }
-          if (this.paidOrders().length > 0) {
-            this.selectedPaidOrder.set(this.paidOrders()[0]);
-            this.displayOrderLines(this.paidOrders()[0]);
-          }
         }
       },
       error: (err) => { throw err; }
@@ -287,7 +279,9 @@ export class Invoices implements OnInit {
       return false;
     }
   }
+  openNewOrderDialog() {
 
+  }
 }
 
 

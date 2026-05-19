@@ -23,13 +23,20 @@ body {
 }
 
 /* Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--accent-color);
   font-weight: 600;
   letter-spacing: 0.3px;
 }
 
-p, span, label {
+p,
+span,
+label {
   color: var(--text-primary);
   line-height: 1.6;
 }
@@ -57,8 +64,8 @@ p, span, label {
 
 /* Input Fields */
 .p-inputtext,
-.p-input-icon-left > input,
-.p-input-icon-right > input,
+.p-input-icon-left>input,
+.p-input-icon-right>input,
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -102,19 +109,19 @@ label {
   color: var(--text-primary) !important;
 }
 
-.p-datatable .p-datatable-thead > tr > th {
+.p-datatable .p-datatable-thead>tr>th {
   background-color: var(--hover-color) !important;
   color: var(--accent-color) !important;
   font-weight: 600 !important;
   border-color: var(--border-color) !important;
 }
 
-.p-datatable .p-datatable-tbody > tr > td {
+.p-datatable .p-datatable-tbody>tr>td {
   border-color: var(--border-color) !important;
   color: var(--text-primary) !important;
 }
 
-.p-datatable .p-datatable-tbody > tr:hover {
+.p-datatable .p-datatable-tbody>tr:hover {
   background-color: var(--hover-color) !important;
 }
 
