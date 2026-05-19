@@ -4,9 +4,10 @@
 </main>
 
 
-<p-tabs [(value)]="0" <p-tablist>
-    <p-tab value="0">Orders</p-tab>
-    <p-tab value="1">Invoices</p-tab>
+<p-tabs [(value)]="activeTab">
+    <p-tablist>
+        <p-tab value="0">Orders</p-tab>
+        <p-tab value="1">Invoices</p-tab>
     </p-tablist>
     <p-tabpanels>
         <p-tabpanel value="0">

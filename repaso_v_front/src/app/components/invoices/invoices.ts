@@ -1,4 +1,4 @@
-import { Component, inject, model, OnInit, signal } from '@angular/core';
+import { Component, inject, model, OnInit, signal, effect } from '@angular/core';
 import { InvoiceService } from '../../services/invoice-service/invoice-service';
 import { ActivatedRoute, Router, TitleStrategy } from '@angular/router';
 import { iOrder } from '../../interfaces/iorder';
@@ -48,9 +48,32 @@ export class Invoices implements OnInit {
   selectedActiveOrder = model<iOrder>();
   selectedPaidOrder = model<iOrder>();
 
+  constructor() {
+    effect(() => {
+      const tabActual = this.activeTab();
+      if (tabActual === "0") {
+        // Seleccionar primer active
+        const firstActive = this.activeOrders()[0];
+        if (firstActive) {
+          this.selectedActiveOrder.set(firstActive);
+          this.displayOrderLines(firstActive);
+        } else {
+          this.orderLines.set([]);
+        }
+      } else if (tabActual === "1") {
+        // Seleccionar primer pagado
+        const firstPaid = this.paidOrders()[0];
+        if (firstPaid) {
+          this.selectedPaidOrder.set(firstPaid);
+          this.displayOrderLines(firstPaid);
+        } else {
+          this.orderLines.set([]);
+        }
+      }
+    });
+  }
   ngOnInit(): void {
     this.activeTab.set("0");
-    console.log("valor pestaña: " + this.activeTab())
     const clientId = Number(this.route.snapshot.params['clientId']);
     this.clientService.getClientById(clientId).subscribe({
       next: (client) => {
