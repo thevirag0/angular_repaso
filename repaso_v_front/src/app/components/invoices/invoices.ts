@@ -16,6 +16,8 @@ import { CommonModule } from '@angular/common';
 import { ClientService } from '../../services/client/client-service';
 import { TabsModule } from 'primeng/tabs';
 import { iClient } from '../../interfaces/iclient';
+import { consumerPollProducersForChange } from '@angular/core/primitives/signals';
+import { RouterTestingHarness } from '@angular/router/testing';
 
 
 @Component({
@@ -48,14 +50,18 @@ export class Invoices implements OnInit {
   selectedActiveOrder = model<iOrder>();
   selectedPaidOrder = model<iOrder>();
   currentClient = signal<iClient | null>(null);
+  newOrderDialog = signal<boolean>(false);
 
   constructor() {
     effect(() => {
+      console.log("ESTIC en l'EFFECT")
       const tabActual = this.activeTab();
       if (tabActual === "0") {
         // Seleccionar primer active
         const firstActive = this.activeOrders()[0];
+        console.log(firstActive)
         if (firstActive) {
+
           this.selectedActiveOrder.set(firstActive);
           this.displayOrderLines(firstActive);
         } else {
@@ -149,7 +155,17 @@ export class Invoices implements OnInit {
         order: order,
         product: product
       } as iOrderLine;
-      this.orderLines.update(lines => [...lines, newLine]);
+      console.log("Anado la linia a this.seletedActiveOrder()")
+      this.selectedActiveOrder()?.orderLines.push(newLine);
+      console.log("TODAS LAS ORDER ACTIVAS")
+      console.log(this.activeOrders())
+      console.log("lA ORDER ACTIVA")
+      console.log(this.selectedActiveOrder())
+      // Actualizar también las orderLines en la orden seleccionada
+      /*this.selectedActiveOrder.set({
+        ...order,
+        orderLines: this.orderLines()
+      });*/
       this.updateTotalPrice();
       this.dialogVisible.set(false);
 
@@ -178,6 +194,7 @@ export class Invoices implements OnInit {
     // this.numFila.set(-1);
     this.isReadOnly.set(true);
   }
+
   onPaidOrderSelect() {
     const order = this.selectedPaidOrder();
     if (!order) return;
@@ -263,7 +280,7 @@ export class Invoices implements OnInit {
     if (order) {
       this.selectedActiveOrder.set({ ...order, totalPrice: newTotal });
       this.allOrders.update(orders =>
-        orders.map(o => o.id === order.id ? { ...o, totalPrice: newTotal } : o)
+        orders.map(o => o.id === order.id ? { ...o, totalPrice: newTotal, orderLines: this.orderLines() } : o)
       );
       this.classifyOrders();
 
@@ -279,9 +296,30 @@ export class Invoices implements OnInit {
       return false;
     }
   }
-  openNewOrderDialog() {
 
+  newVoidOrder() {
+    const currentDate: Date = new Date();
+    const selectedClient = this.currentClient()
+    if (!selectedClient) {
+      console.log('No client selected');
+      return;
+    }
+    const voidOrder: iOrder = {
+      id: 0, orderDate: currentDate, datePaid: null, orderLines: [], totalPrice: 0, client: selectedClient, status: 'PREPARING'
+    }
+    this.activeOrders.update(activeOrders => [voidOrder, ...activeOrders,])
+
+    const lastOrder: iOrder = this.activeOrders()[0];
+    this.selectedActiveOrder.set(lastOrder);
+    this.displayOrderLines(lastOrder)
+    console.log("lastorder")
+    console.log(lastOrder)
+    console.log("selectedorder")
+    console.log(this.selectedActiveOrder())
   }
+
+
 }
+
 
 

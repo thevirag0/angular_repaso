@@ -1,3 +1,6 @@
+<main class="content-area">
+    <h1 class="text-center">User List</h1>
+</main>
 <div class="card">
     <p-table [value]="allClients()" [paginator]="true" [rows]="5" [tableStyle]="{ 'min-width': '50rem' }"
         [rowsPerPageOptions]="[5, 10, 20]">
@@ -7,7 +10,8 @@
                 <th style="width:25%">Address</th>
                 <th style="width:25%">Email</th>
                 <th style="width:25%">Password</th>
-                <th><p-button label="Add +" (click)="isReadonly.set(false);buttonMessage.set('Save');newClient()" /></th>
+                <th><p-button label="Add +" (click)="isReadonly.set(false);buttonMessage.set('Save');newClient()" />
+                </th>
             </tr>
         </ng-template>
         <ng-template #body let-client>
@@ -17,20 +21,22 @@
                 <td>{{ client.email }}</td>
                 <td>{{ client.password }}</td>
                 <td>
-                <div class="flex center-content-center">
-                    <p-button label="Modify" (click)="isReadonly.set(false);buttonMessage.set('Save');modifyClient(client)" />
-                </div>
-            </td>
-            <td>
-                <div class="flex center-content-center">
-                    <p-button label="Delete" (click)="isReadonly.set(true);buttonMessage.set('Delete');deleteClient(client)" />
-                </div>
-            </td>
-            <td>
-                <div class="flex center-content-center">
-                    <p-button label="Invoices " (click)="viewInvoices(client);" />
-                </div>
-            </td>
+                    <div class="flex center-content-center">
+                        <p-button label="Modify"
+                            (click)="isReadonly.set(false);buttonMessage.set('Save');modifyClient(client)" />
+                    </div>
+                </td>
+                <td>
+                    <div class="flex center-content-center">
+                        <p-button label="Delete"
+                            (click)="isReadonly.set(true);buttonMessage.set('Delete');deleteClient(client)" />
+                    </div>
+                </td>
+                <td>
+                    <div class="flex center-content-center">
+                        <p-button label="Invoices " (click)="viewInvoices(client);" />
+                    </div>
+                </td>
             </tr>
         </ng-template>
     </p-table>
