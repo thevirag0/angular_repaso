@@ -1,4 +1,4 @@
-import { Component, inject, model, OnInit, signal, effect } from '@angular/core';
+import { Component, inject, model, OnInit, signal } from '@angular/core';
 import { InvoiceService } from '../../services/invoice-service/invoice-service';
 import { ActivatedRoute, Router, TitleStrategy } from '@angular/router';
 import { iOrder } from '../../interfaces/iorder';
@@ -28,6 +28,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 })
 export class Invoices implements OnInit {
 
+
   clientService = inject(ClientService);
   orderService = inject(InvoiceService);
   productService = inject(ProductService);
@@ -43,7 +44,7 @@ export class Invoices implements OnInit {
   isReadOnly = signal<boolean>(true);
   numFila = signal<number>(-1);
   selectedProduct = model<iProduct>();
-  activeTab = model<string>("0");
+  activeTab = model<number>(0);
   voidOrderLine: iOrderLine = { id: 0, unityPrice: 0, quantity: 0, product: null as any, order: null as any };
   editLine = model<iOrderLine>({ ...this.voidOrderLine });
   dialogVisible = signal<boolean>(false);
@@ -52,35 +53,8 @@ export class Invoices implements OnInit {
   currentClient = signal<iClient | null>(null);
   newOrderDialog = signal<boolean>(false);
 
-  constructor() {
-    effect(() => {
-      console.log("ESTIC en l'EFFECT")
-      const tabActual = this.activeTab();
-      if (tabActual === "0") {
-        // Seleccionar primer active
-        const firstActive = this.activeOrders()[0];
-        console.log(firstActive)
-        if (firstActive) {
-
-          this.selectedActiveOrder.set(firstActive);
-          this.displayOrderLines(firstActive);
-        } else {
-          this.orderLines.set([]);
-        }
-      } else if (tabActual === "1") {
-        // Seleccionar primer pagado
-        const firstPaid = this.paidOrders()[0];
-        if (firstPaid) {
-          this.selectedPaidOrder.set(firstPaid);
-          this.displayOrderLines(firstPaid);
-        } else {
-          this.orderLines.set([]);
-        }
-      }
-    });
-  }
   ngOnInit(): void {
-    this.activeTab.set("0");
+    this.activeTab.set(0);
     const clientId = Number(this.route.snapshot.params['clientId']);
     this.clientService.getClientById(clientId).subscribe({
       next: (client) => {
@@ -94,8 +68,15 @@ export class Invoices implements OnInit {
     this.orderService.getClientInvoices(clientId).subscribe({
       next: (orders) => {
         if (orders.length > 0) {
-          this.allOrders.set(orders);
+          // Recalcular totalPrice de las órdenes basado en sus orderLines
+          const updatedOrders = orders.map(order => {
+            this.recalculateOrderTotal(order);
+            return { ...order }; // Crear nueva referencia
+          });
+          this.allOrders.set(updatedOrders);
           this.classifyOrders();
+          // Mostrar la primera orden del primer tab
+          this.onTabChange(0);
         }
       },
       error: (err) => { throw err; }
@@ -155,20 +136,13 @@ export class Invoices implements OnInit {
         order: order,
         product: product
       } as iOrderLine;
-      console.log("Anado la linia a this.seletedActiveOrder()")
-      this.selectedActiveOrder()?.orderLines.push(newLine);
-      console.log("TODAS LAS ORDER ACTIVAS")
-      console.log(this.activeOrders())
-      console.log("lA ORDER ACTIVA")
-      console.log(this.selectedActiveOrder())
-      // Actualizar también las orderLines en la orden seleccionada
-      /*this.selectedActiveOrder.set({
-        ...order,
-        orderLines: this.orderLines()
-      });*/
+
+      const updatedLines = [...this.orderLines(), newLine];
+      this.orderLines.set(updatedLines);
+      order.orderLines = updatedLines; // Sincronizar con la orden
+
       this.updateTotalPrice();
       this.dialogVisible.set(false);
-
     }
   };
 
@@ -190,25 +164,55 @@ export class Invoices implements OnInit {
     const order = this.selectedActiveOrder();
     if (!order) return;
 
+    // Recalcular totalPrice basado en orderLines
+    this.recalculateOrderTotal(order);
+
+    // Crear un nuevo objeto para que Angular detecte el cambio
+    const updatedOrder = { ...order };
+
     this.displayOrderLines(order);
     // this.numFila.set(-1);
     this.isReadOnly.set(true);
+
+    // Actualizar en allOrders para que se refleje en la tabla
+    this.allOrders.update(orders =>
+      orders.map(o => o.id === updatedOrder.id ? updatedOrder : o)
+    );
+    this.classifyOrders();
   }
 
   onPaidOrderSelect() {
     const order = this.selectedPaidOrder();
     if (!order) return;
 
+    // Recalcular totalPrice basado en orderLines
+    this.recalculateOrderTotal(order);
+
+    // Crear un nuevo objeto para que Angular detecte el cambio
+    const updatedOrder = { ...order };
+
     this.displayOrderLines(order);
     //  this.numFila.set(-1);
     this.isReadOnly.set(true);
+
+    // Actualizar en allOrders para que se refleje en la tabla
+    this.allOrders.update(orders =>
+      orders.map(o => o.id === updatedOrder.id ? updatedOrder : o)
+    );
+    this.classifyOrders();
   }
 
   deleteOrderLine(orderLine: iOrderLine, rowIndex: number) {
+    // Actualizar la signal
     this.orderLines.update(lines =>
       lines.filter(l => l.id !== orderLine.id)
     );
-    //this.saveOrder();
+    // Sincronizar con la orden seleccionada
+    const order = this.selectedActiveOrder();
+    if (order) {
+      order.orderLines = this.orderLines();
+    }
+    this.updateTotalPrice();
   }
 
   listProducts() {
@@ -247,28 +251,80 @@ export class Invoices implements OnInit {
     const selected = this.selectedActiveOrder();
     if (!selected) return;
 
+    // Limpiar referencias circulares antes de enviar
+    const cleanedOrderLines = this.orderLines().map(line => ({
+      id: line.id,
+      quantity: line.quantity,
+      unityPrice: line.unityPrice,
+      product: {
+        id: line.product.id,
+        name: line.product.name,
+        image: line.product.image
+      }
+    }));
+
     const payload: iOrder = {
       ...selected,
       totalPrice: this.updateTotalPrice(),
-      orderLines: [...this.orderLines()],
+      orderLines: cleanedOrderLines as any,
     };
-    this.orderService.updateOrder(payload.id, payload).subscribe({
-      next: (updatedOrder) => {
-        const finalOrder: iOrder = { ...payload, ...updatedOrder };
 
-        this.selectedActiveOrder.set(finalOrder);
-        this.allOrders.update(list =>
-          list.map(o => (o.id === finalOrder.id ? finalOrder : o))
-        );
-        this.classifyOrders();
-
-        console.log('Order saved successfully:', finalOrder);
-      },
-      error: (err) => {
-        console.log('Error saving order:', err);
-      }
-    });
+    // Si es orden nueva (id=0), hacer POST; si es existente, hacer PUT
+    if (payload.id === 0) {
+      this.orderService.createOrder(payload).subscribe({
+        next: (createdOrder) => {
+          const finalOrder: iOrder = { ...payload, ...createdOrder };
+          this.selectedActiveOrder.set(finalOrder);
+          this.allOrders.update(list =>
+            list.map(o => (o.id === 0 ? finalOrder : o)) // Reemplazar la orden temporal (id=0) con la nueva
+          );
+          this.classifyOrders();
+          this.displayOrderLines(finalOrder);
+          this.numFila.set(-1);
+          console.log('New order created successfully:', finalOrder);
+        },
+        error: (err) => {
+          console.log('Error creating order:', err);
+        }
+      });
+    } else {
+      this.orderService.updateOrder(payload.id, payload).subscribe({
+        next: (updatedOrder) => {
+          const finalOrder: iOrder = { ...payload, ...updatedOrder };
+          this.selectedActiveOrder.set(finalOrder);
+          this.allOrders.update(list =>
+            list.map(o => (o.id === finalOrder.id ? finalOrder : o))
+          );
+          this.classifyOrders();
+          this.displayOrderLines(finalOrder);
+          this.numFila.set(-1);
+          console.log('Order updated successfully:', finalOrder);
+        },
+        error: (err) => {
+          console.log('Error updating order:', err);
+        }
+      });
+    }
   }
+
+  // Recalcular el totalPrice de una orden basado en sus orderLines
+  recalculateOrderTotal(order: iOrder) {
+    console.log('recalculating for order', order.id, 'orderLines:', order.orderLines);
+    if (!order.orderLines || order.orderLines.length === 0) {
+      order.totalPrice = 0;
+      console.log('no orderLines, totalPrice set to 0');
+      return;
+    }
+
+    let total = 0;
+    order.orderLines.forEach(line => {
+      total += (line.quantity || 0) * (line.unityPrice || 0);
+    });
+    order.totalPrice = total;
+    console.log('calculated totalPrice:', total);
+  }
+
+
 
   updateTotalPrice(): number {
     let newTotal = 0;
@@ -289,7 +345,7 @@ export class Invoices implements OnInit {
   }
 
   isSelectedOrderPaid(): boolean {
-    if (this.activeTab() === "1") {
+    if (this.activeTab() === 1) {
       return true
     }
     else {
@@ -307,17 +363,88 @@ export class Invoices implements OnInit {
     const voidOrder: iOrder = {
       id: 0, orderDate: currentDate, datePaid: null, orderLines: [], totalPrice: 0, client: selectedClient, status: 'PREPARING'
     }
-    this.activeOrders.update(activeOrders => [voidOrder, ...activeOrders,])
+    // Agregar a AMBAS signals
+    this.allOrders.update(all => [voidOrder, ...all]);
+    this.activeOrders.update(activeOrders => [voidOrder, ...activeOrders]);
 
-    const lastOrder: iOrder = this.activeOrders()[0];
-    this.selectedActiveOrder.set(lastOrder);
-    this.displayOrderLines(lastOrder)
-    console.log("lastorder")
-    console.log(lastOrder)
-    console.log("selectedorder")
-    console.log(this.selectedActiveOrder())
+    this.selectedActiveOrder.set(voidOrder);
+    this.displayOrderLines(voidOrder);
   }
 
+  // Método que se llama cuando cambias de tab
+  onTabChange(tabIndex: any) {
+    if (tabIndex === 0) {
+      const firstActive = this.activeOrders()[0];
+      if (firstActive) {
+        this.selectedActiveOrder.set(firstActive);
+        this.displayOrderLines(firstActive);
+      } else {
+        this.orderLines.set([]);
+      }
+    } else if (tabIndex === 1) {
+      const firstPaid = this.paidOrders()[0];
+      if (firstPaid) {
+        this.selectedPaidOrder.set(firstPaid);
+        this.displayOrderLines(firstPaid);
+      } else {
+        this.orderLines.set([]);
+      }
+    }
+  }
+
+  getNextStatusButton(order: iOrder): { label: string, nextStatus: string, disabled: boolean } {
+    if (order.status === 'PREPARING') return { label: 'READY', nextStatus: 'READY', disabled: false };
+    if (order.status === 'READY') return { label: 'PAY', nextStatus: 'PAID', disabled: false };
+    if (order.status === 'PAID') return { label: 'SERVE', nextStatus: 'SERVED', disabled: false };
+    if (order.status === 'SERVED') return { label: '', nextStatus: '', disabled: true }; // ← Final
+    return { label: '', nextStatus: '', disabled: true };
+  }
+
+  updateOrderStatus(order: iOrder, nextStatus: string) {
+
+    if (!order) return;
+
+    // Limpiar referencias circulares antes de enviar
+    const cleanedOrderLines = order.orderLines.map(line => ({
+      id: line.id,
+      quantity: line.quantity,
+      unityPrice: line.unityPrice,
+      product: {
+        id: line.product.id,
+        name: line.product.name,
+        image: line.product.image
+      }
+    }));
+
+    const payload: iOrder = {
+      ...order,
+      status: nextStatus,
+      orderLines: cleanedOrderLines as any,
+    };
+
+    this.orderService.updateOrder(payload.id, payload).subscribe({
+      next: (updatedOrder) => {
+        const finalOrder: iOrder = { ...payload, ...updatedOrder };
+        if (finalOrder.status === 'PAID' || finalOrder.status === 'SERVED') {
+          this.selectedPaidOrder.set(finalOrder);
+          this.activeTab.set(1);
+        } else {
+          this.selectedActiveOrder.set(finalOrder);
+          this.activeTab.set(0);
+        }
+        this.allOrders.update(list =>
+          list.map(o => (o.id === finalOrder.id ? finalOrder : o))
+        );
+        this.classifyOrders();
+        this.displayOrderLines(finalOrder);
+        console.log('Order updated successfully:', finalOrder);
+      },
+      error: (err) => {
+        console.log('Error updating order:', err);
+      }
+    });
+
+  }
 
 }
 

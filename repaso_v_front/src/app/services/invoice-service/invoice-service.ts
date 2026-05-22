@@ -76,4 +76,14 @@ export class InvoiceService {
       })
     );
   }
+
+  createOrder(order: iOrder): Observable<iOrder> {
+    return this.http.post<RespostaBack>(`${this.baseUrlOrders}`, order).pipe(
+      map(res => res.object as iOrder),
+      catchError(err => {
+        console.log(err.message);
+        throw err;
+      })
+    );
+  }
 }

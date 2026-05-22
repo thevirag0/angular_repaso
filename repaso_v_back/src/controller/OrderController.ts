@@ -3,6 +3,7 @@ import { Order } from "../entity/Order"
 import { Client } from "../entity/Client"
 import AppDataSource from '../data-source';
 import { OrderLine } from "../entity/OrderLine";
+import { OrderStatus } from "../entity/OrderStatus";
 
 export class OrderController {
     private orderRepository = AppDataSource.getRepository(Order)
@@ -149,7 +150,8 @@ export class OrderController {
             } else {
                 // Modificación fisico del registro y salida de exito.
                 orderToUpdate.orderDate = order.orderDate;
-                orderToUpdate.datePaid = order.datePaid;
+                const shouldStampPayDate = order.status === OrderStatus.PAID && orderToUpdate.status !== OrderStatus.PAID;
+                orderToUpdate.datePaid = shouldStampPayDate ? new Date() : (order.datePaid ?? orderToUpdate.datePaid);
                 orderToUpdate.totalPrice = order.totalPrice;
                 orderToUpdate.status = order.status;
 
