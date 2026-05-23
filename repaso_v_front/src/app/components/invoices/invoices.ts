@@ -1,9 +1,9 @@
-import { Component, inject, model, OnInit, signal } from '@angular/core';
+import { Component, inject, model, OnInit, signal, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { InvoiceService } from '../../services/invoice-service/invoice-service';
 import { ActivatedRoute, Router, TitleStrategy } from '@angular/router';
 import { iOrder } from '../../interfaces/iorder';
 import { DialogModule } from 'primeng/dialog';
-import { TableModule } from 'primeng/table';
+import { TableModule, Table } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { iOrderLine } from '../../interfaces/iorderline';
 import { InputTextModule } from 'primeng/inputtext';
@@ -18,17 +18,23 @@ import { TabsModule } from 'primeng/tabs';
 import { iClient } from '../../interfaces/iclient';
 import { consumerPollProducersForChange } from '@angular/core/primitives/signals';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { RippleModule } from 'primeng/ripple';
+import { Toast, ToastModule } from "primeng/toast";
+import { MessageService } from 'primeng/api';
 
 
 @Component({
   selector: 'app-invoices',
-  imports: [CommonModule, TableModule, TabsModule, DialogModule, InputIconModule, IconFieldModule, ButtonModule, InputTextModule, FormsModule, InputTextModule, FormsModule],
+  imports: [CommonModule, TableModule, TabsModule, DialogModule, InputIconModule, IconFieldModule, ButtonModule, InputTextModule, FormsModule, InputTextModule, FormsModule, ToastModule],
   templateUrl: './invoices.html',
   styleUrl: './invoices.css',
+  providers: [MessageService],
+
 })
+
 export class Invoices implements OnInit {
 
-
+  messageService = inject(MessageService);
   clientService = inject(ClientService);
   orderService = inject(InvoiceService);
   productService = inject(ProductService);
@@ -36,7 +42,6 @@ export class Invoices implements OnInit {
   allOrders = signal<iOrder[]>([]);
   activeOrders = signal<iOrder[]>([]);
   paidOrders = signal<iOrder[]>([]);
-  visible: boolean = false;
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   orderLines = signal<iOrderLine[]>([]);
@@ -50,8 +55,11 @@ export class Invoices implements OnInit {
   dialogVisible = signal<boolean>(false);
   selectedActiveOrder = model<iOrder>();
   selectedPaidOrder = model<iOrder>();
+  cdr = inject(ChangeDetectorRef);
+
+  @ViewChild('activeTable') activeTable?: Table;
+  @ViewChild('paidTable') paidTable?: Table;
   currentClient = signal<iClient | null>(null);
-  newOrderDialog = signal<boolean>(false);
 
   ngOnInit(): void {
     this.activeTab.set(0);
@@ -74,7 +82,9 @@ export class Invoices implements OnInit {
             return { ...order }; // Crear nueva referencia
           });
           this.allOrders.set(updatedOrders);
+          console.debug('ngOnInit: allOrders set, count=', updatedOrders.length);
           this.classifyOrders();
+          console.debug('ngOnInit: activeOrders count=', this.activeOrders().length, 'paidOrders count=', this.paidOrders().length);
           // Mostrar la primera orden del primer tab
           this.onTabChange(0);
         }
@@ -84,8 +94,11 @@ export class Invoices implements OnInit {
   }
 
   classifyOrders() {
-    this.activeOrders.set(this.allOrders().filter(order => order.status === 'PREPARING' || order.status === 'READY'))
-    this.paidOrders.set(this.allOrders().filter(order => order.status === 'SERVED' || order.status === 'PAID'))
+    const active = this.allOrders().filter(order => order.status === 'PREPARING' || order.status === 'READY');
+    const paid = this.allOrders().filter(order => order.status === 'SERVED' || order.status === 'PAID');
+    console.debug('classifyOrders: active=', active.length, 'paid=', paid.length);
+    this.activeOrders.set(active);
+    this.paidOrders.set(paid);
   }
 
   displayOrderLines(order: iOrder) {
@@ -127,7 +140,10 @@ export class Invoices implements OnInit {
   addProductToOrderLine(product: iProduct, indexRow: number) {
     const order = this.selectedActiveOrder();
     if (!order) {
-      console.log('Error retrieving order')
+      console.log('Error retrieving order');
+      this.dialogVisible.set(false);
+      this.showToast('error', 'Error', 'No order selected');
+      return;
     } else {
       const newLine: iOrderLine = {
         id: 0,
@@ -144,6 +160,7 @@ export class Invoices implements OnInit {
       this.updateTotalPrice();
       this.dialogVisible.set(false);
     }
+    this.showToast('success', 'Added', 'Product added successfully')
   };
 
   confirmEdit() {
@@ -188,20 +205,26 @@ export class Invoices implements OnInit {
     // Recalcular totalPrice basado en orderLines
     this.recalculateOrderTotal(order);
 
-    // Crear un nuevo objeto para que Angular detecte el cambio
-    const updatedOrder = { ...order };
-
     this.displayOrderLines(order);
-    //  this.numFila.set(-1);
     this.isReadOnly.set(true);
 
-    // Actualizar en allOrders para que se refleje en la tabla
     this.allOrders.update(orders =>
-      orders.map(o => o.id === updatedOrder.id ? updatedOrder : o)
+      orders.map(o => o.id === order.id ? order : o)
     );
-    this.classifyOrders();
   }
-
+  /*
+    onActiveSelectionChange(event: any) {
+      console.debug('onActiveSelectionChange event:', event);
+      this.selectedActiveOrder.set(event);
+      if (event) this.displayOrderLines(event);
+    }
+  
+    onPaidSelectionChange(event: any) {
+      console.debug('onPaidSelectionChange event:', event);
+      this.selectedPaidOrder.set(event);
+      if (event) this.displayOrderLines(event);
+    }
+  */
   deleteOrderLine(orderLine: iOrderLine, rowIndex: number) {
     // Actualizar la signal
     this.orderLines.update(lines =>
@@ -213,6 +236,7 @@ export class Invoices implements OnInit {
       order.orderLines = this.orderLines();
     }
     this.updateTotalPrice();
+    this.showToast('success', 'Deleted', 'Product deleted successfully from order');
   }
 
   listProducts() {
@@ -236,6 +260,7 @@ export class Invoices implements OnInit {
     this.numFila.set(-1);
     this.isReadOnly.set(true);
     this.updateTotalPrice();
+    this.showToast('error', 'Cancelled', 'Operation cancelled.')
   }
   /*
     saveChanges() {
@@ -253,7 +278,7 @@ export class Invoices implements OnInit {
 
     // Limpiar referencias circulares antes de enviar
     const cleanedOrderLines = this.orderLines().map(line => ({
-      id: line.id,
+      id: line.id > 0 ? line.id : undefined,
       quantity: line.quantity,
       unityPrice: line.unityPrice,
       product: {
@@ -305,6 +330,7 @@ export class Invoices implements OnInit {
         }
       });
     }
+    this.showToast('success', 'Success', 'Changes saved successfully')
   }
 
   // Recalcular el totalPrice de una orden basado en sus orderLines
@@ -376,17 +402,38 @@ export class Invoices implements OnInit {
     if (tabIndex === 0) {
       const firstActive = this.activeOrders()[0];
       if (firstActive) {
-        this.selectedActiveOrder.set(firstActive);
-        this.displayOrderLines(firstActive);
+        setTimeout(() => {
+          console.debug('onTabChange(orders): setting selectedActiveOrder to', firstActive);
+          this.selectedActiveOrder.set(firstActive);
+          // also set Table API selection and update selectionKeys so PrimeNG highlights the row
+          if (this.activeTable) {
+            this.activeTable.selection = firstActive as any;
+            try { this.activeTable.updateSelectionKeys(); } catch (e) { /* ignore */ }
+          }
+          this.cdr.detectChanges?.();
+          console.debug('onTabChange: selectedActiveOrder is now', this.selectedActiveOrder());
+          this.displayOrderLines(firstActive);
+        }, 50);
       } else {
         this.orderLines.set([]);
       }
     } else if (tabIndex === 1) {
-      const firstPaid = this.paidOrders()[0];
-      if (firstPaid) {
-        this.selectedPaidOrder.set(firstPaid);
-        this.displayOrderLines(firstPaid);
+      const paidList = this.paidOrders();
+      if (paidList.length > 0) {
+        const firstPaid = paidList[0];
+        setTimeout(() => {
+          console.debug('onTabChange(invoices): setting selectedPaidOrder to', firstPaid);
+          this.selectedPaidOrder.set(firstPaid);
+          if (this.paidTable) {
+            this.paidTable.selection = firstPaid as any;
+            try { this.paidTable.updateSelectionKeys(); } catch (e) { /* ignore */ }
+          }
+          this.cdr.detectChanges?.();
+          console.debug('onTabChange: selectedPaidOrder is now', this.selectedPaidOrder());
+          this.displayOrderLines(firstPaid);
+        }, 50);
       } else {
+        this.selectedPaidOrder.set(undefined);
         this.orderLines.set([]);
       }
     }
@@ -445,8 +492,11 @@ export class Invoices implements OnInit {
     });
 
   }
+  //compareOrders(o1: iOrder, o2: iOrder): boolean {
+  //  return o1 && o2 ? o1.id === o2.id : o1 === o2;
+  // }
 
+  showToast(severity: string, summary: string, detail: string) {
+    this.messageService.add({ severity, summary, detail });
+  }
 }
-
-
-

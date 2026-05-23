@@ -7,16 +7,18 @@
     <p-button icon="pi pi-shopping-cart" [style.visibility]="isSelectedOrderPaid() ? 'hidden' : 'visible'"
         label="New Order" severity="info" (click)="newVoidOrder()"></p-button>
 </div>
+<p-toast position="top-right" />
 
 <p-tabs [(value)]="activeTab" (activeIndexChange)="onTabChange($event)">
     <p-tablist>
-        <p-tab [value]="0">Orders</p-tab>
-        <p-tab [value]="1">Invoices</p-tab>
+        <p-tab [value]="0" (click)="onTabChange(0)">Orders</p-tab>
+        <p-tab [value]="1" (click)="onTabChange(1)">Invoices</p-tab>
     </p-tablist>
     <p-tabpanels>
         <p-tabpanel [value]="0">
             <div class="card">
-                <p-table [value]="activeOrders()" selectionMode="single" [(selection)]="selectedActiveOrder"
+                <p-table [value]="activeOrders()" dataKey="id" selectionMode="single"
+                    [selection]="selectedActiveOrder()" (selectionChange)="selectedActiveOrder.set($event)" #activeTable
                     (onRowSelect)="onActiveOrderSelect()" [paginator]="true" [rows]="5"
                     [tableStyle]="{ 'min-width': '20rem' }" [rowsPerPageOptions]="[5, 10, 20]">
                     <ng-template #header>
@@ -49,9 +51,10 @@
         </p-tabpanel>
         <p-tabpanel [value]="1">
             <div class="card">
-                <p-table [value]="paidOrders()" selectionMode="single" [(selection)]="selectedPaidOrder"
-                    (onRowSelect)="onPaidOrderSelect()" [paginator]="true" [rows]="5"
-                    [tableStyle]="{ 'min-width': '20rem' }" [rowsPerPageOptions]="[5, 10, 20]">
+                <p-table [value]="paidOrders()" dataKey="id" selectionMode="single" [selection]="selectedPaidOrder()"
+                    (selectionChange)="selectedPaidOrder.set($event)" (onRowSelect)="onPaidOrderSelect()" #paidTable
+                    [paginator]="true" [rows]="5" [tableStyle]="{ 'min-width': '20rem' }"
+                    [rowsPerPageOptions]="[5, 10, 20]">
                     <ng-template #header>
                         <tr>
                             <th style="width:25%">Date</th>
@@ -125,11 +128,13 @@
     </ng-template>
 </p-table>
 <p-button icon="pi pi-plus" severity="primary" label="Add Product" [disabled]="isSelectedOrderPaid()" rounded
-    (click)="newOrderLine();dialogVisible.set(true)" />
+    (click)="newOrderLine();dialogVisible.set(true)"></p-button>
+
 <p-button icon="pi pi-check" severity="success" label="Save changes" rounded (click)="confirmEdit()"
-    [disabled]="isSelectedOrderPaid()" />
+    [disabled]="isSelectedOrderPaid()"></p-button>
+
 <p-button icon="pi pi-times" severity="danger" label="Cancel changes" rounded (click)="cancelChanges()"
-    [disabled]="isSelectedOrderPaid()" />
+    [disabled]="isSelectedOrderPaid()"></p-button>
 
 <p-dialog header="New order line" [modal]="true" [visible]="dialogVisible()" (onHide)="dialogVisible.set(false)"
     [style]="{ width: '65rem' }" appendTo="body">

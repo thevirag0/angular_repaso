@@ -34,23 +34,23 @@ export class Login {
   user: User = {} as User;
 
   //metodos
- /* logIn() {
-    //programar validacion
-    var validated = this.userService.validate(this.email(), this.password()); //esos parentesis son 
-    //como el "get", sino no va a poder coger los datos
-    if (validated) {
-      this.message.set("Validado");
-    } else {
-      this.message.set("Validación incorrecta");
-    }
-    this.visible = true;
-  }*/
+  /* logIn() {
+     //programar validacion
+     var validated = this.userService.validate(this.email(), this.password()); //esos parentesis son 
+     //como el "get", sino no va a poder coger los datos
+     if (validated) {
+       this.message.set("Validado");
+     } else {
+       this.message.set("Validación incorrecta");
+     }
+     this.visible = true;
+   }*/
   show() {
     this.messageService.add({ severity: 'info', summary: 'Info', detail: this.message() });
   }
- logIn(){
+  logIn() {
     this.validate();
- }
+  }
 
   validate() {
     var validated = this.userService.validate(this.email(), this.password()).subscribe({

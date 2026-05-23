@@ -32,7 +32,7 @@ export class Client implements OnInit {
 
   ngOnInit(): void {
     this.clientService.listClients().subscribe({
-      next:   (clients) => {
+      next: (clients) => {
         this.allClients.set(clients);
       }, error: (err) => {
         throw err;
@@ -45,38 +45,44 @@ export class Client implements OnInit {
     this.action = "ADD";
     this.message.set("Add a new client.")
     this.editClient.set({ ...this.voidClient });
+    console.debug('Client.newClient() called');
     this.visible = true;
+    console.debug('Client.visible set to', this.visible);
   }
   deleteClient(client: iClient) {
     this.action = "DELETE";
     this.message.set("Are you sure you want to delete this client?");
     this.editClient.set({ ...client });
+    console.debug('Client.deleteClient() called for', client);
     this.visible = true;
+    console.debug('Client.visible set to', this.visible);
   }
   modifyClient(client: iClient) {
     this.action = "MODIFY";
     this.message.set("Modify client information.");
     this.editClient.set({ ...client });
+    console.debug('Client.modifyClient() called for', client);
     this.visible = true;
+    console.debug('Client.visible set to', this.visible);
   }
 
   save() {
     switch (this.action) {
       case "MODIFY":
-          this.clientService.updateClient(this.editClient().id, this.editClient()).subscribe({
-            next: (updatedClient) => {
-              console.log('Client updated : ', updatedClient);
-              this.visible = false;
-              //actualizar SOLO el que se ha modificado
-              this.allClients.update(clients =>
-                clients.map(c => c.id === updatedClient.id ? updatedClient : c));
-            },
-            error: (err) => {
-              console.log('Error updating: ', err);
-              this.errorMessage.set('Error updating client');
-              this.mensajeVisible.set(true);
-            }
-          });
+        this.clientService.updateClient(this.editClient().id, this.editClient()).subscribe({
+          next: (updatedClient) => {
+            console.log('Client updated : ', updatedClient);
+            this.visible = false;
+            //actualizar SOLO el que se ha modificado
+            this.allClients.update(clients =>
+              clients.map(c => c.id === updatedClient.id ? updatedClient : c));
+          },
+          error: (err) => {
+            console.log('Error updating: ', err);
+            this.errorMessage.set('Error updating client');
+            this.mensajeVisible.set(true);
+          }
+        });
         break;
       case "ADD":
         this.clientService.addClient(this.editClient()).subscribe({
@@ -84,7 +90,7 @@ export class Client implements OnInit {
             console.log('Client added:', newClient);
             this.visible = false;
             //actualizar SOLO el que se ha modificado
-              this.allClients.update(clients => [...clients, newClient]);
+            this.allClients.update(clients => [...clients, newClient]);
           },
           error: (err) => {
             console.log('Error adding:', err);
@@ -98,8 +104,8 @@ export class Client implements OnInit {
           this.clientService.deleteClient(this.editClient().id).subscribe({
             next: () => {
               this.visible = false;
-              this.allClients.update(clients => 
-                clients.filter(c=> c.id !== this.editClient().id)
+              this.allClients.update(clients =>
+                clients.filter(c => c.id !== this.editClient().id)
               );
             },
             error: (err) => {
@@ -118,7 +124,7 @@ export class Client implements OnInit {
     }
   }
 
-  viewInvoices(client: iClient) { 
+  viewInvoices(client: iClient) {
     this.router.navigate(['/invoices', client.id]);
   }
 }

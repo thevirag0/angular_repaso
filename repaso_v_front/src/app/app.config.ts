@@ -7,16 +7,17 @@ import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideHttpClient(),
-    provideRouter(routes),
-    provideAnimationsAsync(),
+    providers: [
+        provideBrowserGlobalErrorListeners(),
+        provideZoneChangeDetection({ eventCoalescing: true }),
+        provideHttpClient(),
+        provideRouter(routes),
+        provideAnimationsAsync(),
         providePrimeNG({
+            ripple: false,
             theme: {
                 preset: Material
             }
         })
-  ]
+    ]
 };

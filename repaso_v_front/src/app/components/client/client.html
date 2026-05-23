@@ -10,7 +10,9 @@
                 <th style="width:25%">Address</th>
                 <th style="width:25%">Email</th>
                 <th style="width:25%">Password</th>
-                <th><p-button label="Add +" (click)="isReadonly.set(false);buttonMessage.set('Save');newClient()" />
+                <th><p-button label="Add +" (click)="isReadonly.set(false);buttonMessage.set('Save');newClient()"
+                        (onClick)="isReadonly.set(false);buttonMessage.set('Save');newClient()" />
+                </th>
                 <th></th>
                 <th></th>
 
@@ -36,7 +38,7 @@
                 </td>
                 <td>
                     <div class="flex center-content-center">
-                        <p-button label="Invoices " (click)="viewInvoices(client);" />
+                        <p-button label="Orders " (click)="viewInvoices(client);" />
                     </div>
                 </td>
             </tr>
@@ -44,7 +46,8 @@
     </p-table>
 </div>
 <div class="card flex justify-center">
-    <p-dialog header="Client Information" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+    <p-dialog header="Client Information" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }"
+        appendTo="body">
         <span class="p-text-secondary block mb-8">{{message()}}</span>
         <div class="flex items-center gap-4 mb-4">
             <label for="name" class="font-semibold w-24">Name</label>
@@ -73,7 +76,7 @@
     </p-dialog>
 </div>
 
-<p-dialog header="Error" [modal]="true" [(visible)]="mensajeVisible" [style]="{ width: '25rem' }">
+<p-dialog header="Error" [modal]="true" [(visible)]="mensajeVisible" [style]="{ width: '25rem' }" appendTo="body">
     <span class="p-text-secondary block mb-8">{{errorMessage()}}</span>
 
     <div class="flex justify-end gap-2">

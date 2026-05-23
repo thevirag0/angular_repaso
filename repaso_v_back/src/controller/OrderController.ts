@@ -82,7 +82,10 @@ export class OrderController {
                 totalPrice,
                 status,
                 client: clientFound,
-                orderLines: orderLines // Si se envian las lineas de pedido en el body, se asignan directamente. Sino, se pueden crear aparte y asignar luego.
+                orderLines: orderLines.map((ol: any) => Object.assign(new OrderLine(), {
+                    ...ol,
+                    id: ol.id > 0 ? ol.id : undefined
+                })) // Si se envian las lineas de pedido en el body, se asignan directamente. Sino, se pueden crear aparte y asignar luego.
             });
 
             // Paso 3: persistir en base de datos.
@@ -156,9 +159,11 @@ export class OrderController {
                 orderToUpdate.status = order.status;
 
                 orderToUpdate.orderLines = order.orderLines.map(ol => {
-                    // Si tiene ID, es una existente que estamos editando
-                    // Si no tiene ID, TypeORM la crea como nueva
-                    return Object.assign(new OrderLine(), ol);
+                    // Si el id viene a 0/undefined, TypeORM debe crear una fila nueva.
+                    return Object.assign(new OrderLine(), {
+                        ...ol,
+                        id: ol.id > 0 ? ol.id : undefined
+                    });
                 });
                 await this.orderRepository.save(orderToUpdate)
                 response.status(200).json({
