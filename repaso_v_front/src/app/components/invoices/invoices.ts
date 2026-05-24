@@ -499,4 +499,21 @@ export class Invoices implements OnInit {
   showToast(severity: string, summary: string, detail: string) {
     this.messageService.add({ severity, summary, detail });
   }
+
+  printPdf(order:iOrder){
+    this.orderService.downloadInvoice(order.id).subscribe({
+      next: (pdf) => {
+        const url = window.URL.createObjectURL(pdf);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice-${order.id}.pdf`;
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.showToast("error", "Error", "Could not retrieve printable invoice. Try again later.")
+      }
+    })
+  }
 }

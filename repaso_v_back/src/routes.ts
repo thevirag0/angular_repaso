@@ -84,7 +84,7 @@ export const Routes = [
     },
     {
         method: "put",
-        route: API +"/orders/:id",
+        route: API + "/orders/:id",
         controller: OrderController,
         action: "updateOrder"
     },
@@ -111,6 +111,12 @@ export const Routes = [
         route: API + "/orders/:id",
         controller: OrderController,
         action: "remove"
+    },
+    {
+        method: "get",
+        route: API + "/orders/:id/invoice",
+        controller: OrderController,
+        action: "invoice"
     },
     //order-lines
     {

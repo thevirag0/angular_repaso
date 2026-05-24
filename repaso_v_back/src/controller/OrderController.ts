@@ -4,6 +4,8 @@ import { Client } from "../entity/Client"
 import AppDataSource from '../data-source';
 import { OrderLine } from "../entity/OrderLine";
 import { OrderStatus } from "../entity/OrderStatus";
+import PDFDocument from "pdfkit";
+import * as path from "path";
 
 export class OrderController {
     private orderRepository = AppDataSource.getRepository(Order)
@@ -219,6 +221,96 @@ export class OrderController {
             response.status(500).json({
                 "message": error,
                 "object": error
+            });
+        }
+    }
+
+    //método async para devolver el documento
+    async invoice(request: Request, response: Response, next: NextFunction) {
+        const id = parseInt(request.params.id as string, 10);
+
+        try {
+            const order = await this.orderRepository.findOne({
+                where: { id },
+                relations: {
+                    client: true,
+                    orderLines: {
+                        product: true
+                    }
+                }
+            });
+
+            if (!order) {
+                response.status(404).json({
+                    message: 'Order not found',
+                    object: null
+                });
+                return;
+            }
+
+            const doc = new PDFDocument({ margin: 50 });
+            const logoPath = path.join(process.cwd(), 'src', 'public', 'images', 'bolsas-de-compra.png');
+
+            response.setHeader('Content-Type', 'application/pdf');
+            response.setHeader('Content-Disposition', `attachment; filename=invoice-${order.id}.pdf`);
+
+            doc.pipe(response);
+
+            doc.rect(0, 0, doc.page.width, 110).fill('#44bfd4');
+
+            try {
+                doc.image(logoPath, 50, 22, { width: 62 });
+            } catch (error) {
+                console.log('Logo not found or could not be loaded:', error);
+            }
+
+            doc.fillColor('#ffffff');
+            doc.fontSize(24).font('Helvetica-Bold').text('PCConfidentes - Invoice', 130, 28);
+            doc.fontSize(10).font('Helvetica').text('PCConfidentes Invoice Report', 130, 58);
+            doc.text(`Order #${order.id}`, 130, 72);
+
+            doc.moveDown();
+
+            doc.fillColor('#123a45');
+
+            doc.roundedRect(50, 135, doc.page.width - 100, 110, 10).fillAndStroke('#f8fdff', '#b9eaf3');
+            doc.fillColor('#123a45').fontSize(12).font('Helvetica-Bold').text('Invoice details', 68, 148);
+            doc.font('Helvetica').text(`Client: ${order.client.name}`, 68, 170);
+            doc.text(`Date: ${new Date(order.orderDate).toLocaleDateString()}`, 68, 188);
+            doc.text(`Status: ${order.status}`, 290, 170);
+            doc.font('Helvetica-Bold').text(`Total: ${order.totalPrice} €`, 290, 188);
+
+            doc.moveDown(5);
+
+            doc.fillColor('#2fa8bf').fontSize(14).font('Helvetica-Bold').text('Order lines', 50, 270);
+            doc.moveTo(50, 290).lineTo(doc.page.width - 50, 290).strokeColor('#b9eaf3').stroke();
+
+            const startY = 305;
+            const lineHeight = 22;
+
+            doc.fontSize(11);
+            order.orderLines.forEach((line, index) => {
+                const y = startY + (index * lineHeight);
+                const rowBg = index % 2 === 0 ? '#f4fdff' : '#ffffff';
+
+                doc.roundedRect(50, y - 4, doc.page.width - 100, 18, 4).fillAndStroke(rowBg, '#e4f8fc');
+
+                doc.fillColor('#123a45').font('Helvetica').text(`${index + 1}.`, 60, y);
+                doc.text(line.product.name, 88, y, { width: 220 });
+                doc.text(`${line.quantity} x ${line.unityPrice} €`, 320, y, { width: 110, align: 'right' });
+                doc.font('Helvetica-Bold').text(`${line.quantity * line.unityPrice} €`, 440, y, { width: 100, align: 'right' });
+            });
+
+            const totalBoxY = startY + (order.orderLines.length * lineHeight) + 20;
+            doc.roundedRect(320, totalBoxY, 180, 42, 8).fillAndStroke('#d8f3f9', '#44bfd4');
+            doc.fillColor('#123a45').fontSize(12).font('Helvetica-Bold').text('Grand total', 334, totalBoxY + 10);
+            doc.fillColor('#2fa8bf').fontSize(16).text(`${order.totalPrice} €`, 418, totalBoxY + 8, { width: 72, align: 'right' });
+
+            doc.end();
+        } catch (error) {
+            response.status(500).json({
+                message: error,
+                object: error
             });
         }
     }

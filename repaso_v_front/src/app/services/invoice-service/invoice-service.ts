@@ -86,4 +86,12 @@ export class InvoiceService {
       })
     );
   }
+
+  //método para imprimir factura en pdf
+  downloadInvoice(orderId: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrlOrders}/${orderId}/invoice`,
+      { responseType: 'blob' }
+    );
+  }
+
 }
