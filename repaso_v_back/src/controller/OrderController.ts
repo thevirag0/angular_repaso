@@ -265,8 +265,8 @@ export class OrderController {
             }
 
             doc.fillColor('#ffffff');
-            doc.fontSize(24).font('Helvetica-Bold').text('PCConfidentes - Invoice', 130, 28);
-            doc.fontSize(10).font('Helvetica').text('PCConfidentes Invoice Report', 130, 58);
+            doc.fontSize(24).font('Helvetica-Bold').text('PcContingentes - Invoice', 130, 28);
+            doc.fontSize(10).font('Helvetica').text('PcContingentes Invoice Report', 130, 58);
             doc.text(`Order #${order.id}`, 130, 72);
 
             doc.moveDown();

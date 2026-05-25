@@ -19,7 +19,7 @@
             <div class="card">
                 <p-table [value]="activeOrders()" dataKey="id" selectionMode="single"
                     [selection]="selectedActiveOrder()" (selectionChange)="selectedActiveOrder.set($event)" #activeTable
-                    (onRowSelect)="onActiveOrderSelect()" [paginator]="true" [rows]="5"
+                    (onRowSelect)="onActiveOrderSelect()" [paginator]="true" [rows]="10"
                     [tableStyle]="{ 'min-width': '20rem' }" [rowsPerPageOptions]="[5, 10, 20]">
                     <ng-template #header>
                         <tr>
@@ -62,6 +62,7 @@
                             <th style="width:25%">Total Price</th>
                             <th style="width:25%">Status</th>
                             <th> </th>
+                            <th> </th>
                         </tr>
                     </ng-template>
                     <ng-template #body let-order>
@@ -79,8 +80,7 @@
                             </td>
                             <td>
                                 <div class="flex center-content-center">
-                                    <p-button label="Download Invoice" severity="info"
-                                        (click)="printPdf(order)"
+                                    <p-button label="Download Invoice" severity="info" (click)="printPdf(order)"
                                         [style.visibility]="order.status === 'SERVED' ? 'visible' : 'hidden'" />
                                 </div>
                             </td>

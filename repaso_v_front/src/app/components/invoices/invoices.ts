@@ -236,7 +236,7 @@ export class Invoices implements OnInit {
       order.orderLines = this.orderLines();
     }
     this.updateTotalPrice();
-    this.showToast('success', 'Deleted', 'Product deleted successfully from order');
+    this.showToast('warn', 'Deleted', 'Product deleted successfully from order');
   }
 
   listProducts() {
@@ -260,7 +260,7 @@ export class Invoices implements OnInit {
     this.numFila.set(-1);
     this.isReadOnly.set(true);
     this.updateTotalPrice();
-    this.showToast('error', 'Cancelled', 'Operation cancelled.')
+    this.showToast('warn', 'Cancelled', 'Operation cancelled.')
   }
   /*
     saveChanges() {
@@ -500,7 +500,7 @@ export class Invoices implements OnInit {
     this.messageService.add({ severity, summary, detail });
   }
 
-  printPdf(order:iOrder){
+  printPdf(order: iOrder) {
     this.orderService.downloadInvoice(order.id).subscribe({
       next: (pdf) => {
         const url = window.URL.createObjectURL(pdf);
