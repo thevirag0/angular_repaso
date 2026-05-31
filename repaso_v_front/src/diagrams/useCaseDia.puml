@@ -1,23 +1,32 @@
-@startuml 
+@startuml UseCases_Invoices
 
-!pragma layout smetana
+skinparam style strictuml
 left to right direction
-actor "Client" as Client
 
-rectangle "Document download" {
-    
-    usecase "View Clients" as view
-    usecase "Select Client" as select
-    usecase "Add Client" as add
-    usecase "Edit Client" as edit
-    usecase "Delete Client" as delete
+actor Client as C
 
-    Admin --> view 
-    select ..>  view : <<extend>> 
-    edit ..> select : <<include>>
-    add ..> view : <<extend>>
-    delete ..> select : <<include>>
-
+rectangle "Invoices" {
+    usecase "List orders" as LOrd
+    usecase "See invoices" as SInv
+    usecase "New Order" as NewOrd
+    usecase "Add Product" as AddProd
+    usecase "Edit Line" as ELine
+    usecase "Save" as Save
+    usecase "Change Status" as ChStatus
+    usecase "Download Invoice" as DPdf
 }
+
+C --> LOrd
+C --> SInv
+
+LOrd ..|> NewOrd : include
+LOrd ..|> ChStatus : include
+NewOrd ..|> AddProd : include
+NewOrd ..|> ELine : extend
+AddProd ..|> Save : include
+ELine ..|> Save : include
+
+SInv ..|> ChStatus : include
+SInv ..|> DPdf : include
 
 @enduml

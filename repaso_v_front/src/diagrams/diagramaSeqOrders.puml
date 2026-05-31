@@ -1,0 +1,49 @@
+@startuml
+
+skinparam style strictuml
+
+actor User as U
+box "Sistema"
+    participant InvoiceComponent as IC
+    participant InvoiceService as IS
+    participant Backend as BE
+
+' U -> IC : login()
+activate IC
+    IC -> IS : getClientOrders(ClientId)
+    activate IS
+        IS -> BE : retrieveOrders(ClientId)
+        activate BE 
+            BE --> IS : allOrders
+        deactivate BE
+        IS --> IC : allOrders
+     deactivate IS
+    IC -> IC : classifyOrdersByType(allOrders)
+    IC --> U : displayOrdersByType
+deactivate IC
+U -> IC : New Order
+activate IC
+    IC -> IC : Create new order & add \nto allOrders and activeOrders
+    loop until order complete
+        U -> IC : addOrderLine(product)
+        IC --> U : "added line" message
+        U -> IC : modify quantity & price 
+    end loop  
+        U -> IC : saveOrder
+        activate IS
+            IC -> IS : saveOrder(newOrder)
+            activate BE
+                IS -> BE : saveNewOrder(newOrder)
+                BE --> IS : newOrder
+            deactivate BE
+            IS --> IC : newOrder 
+        deactivate IS
+        IC -> IC : Update allOrders & activeOrders 
+        IC --> U : "successful order" message
+
+deactivate IC
+
+
+end box
+
+@enduml
