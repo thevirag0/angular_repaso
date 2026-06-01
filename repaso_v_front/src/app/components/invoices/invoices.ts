@@ -145,22 +145,29 @@ export class Invoices implements OnInit {
       this.showToast('error', 'Error', 'No order selected');
       return;
     } else {
-      const newLine: iOrderLine = {
-        id: 0,
-        quantity: 1,
-        unityPrice: product.sellPrice,
-        order: order,
-        product: product
-      } as iOrderLine;
+      if (product.quantity < 1) {
+        console.log('No stock available to serve order');
+        this.dialogVisible.set(false);
+        this.showToast('error', 'Error', 'Not enough stock to order the product');
+        return;
+      } else {
+        const newLine: iOrderLine = {
+          id: 0,
+          quantity: 1,
+          unityPrice: product.sellPrice,
+          order: order,
+          product: product
+        } as iOrderLine;
 
-      const updatedLines = [...this.orderLines(), newLine];
-      this.orderLines.set(updatedLines);
-      order.orderLines = updatedLines; // Sincronizar con la orden
+        const updatedLines = [...this.orderLines(), newLine];
+        this.orderLines.set(updatedLines);
+        order.orderLines = updatedLines; // Sincronizar con la orden
 
-      this.updateTotalPrice();
-      this.dialogVisible.set(false);
+        this.updateTotalPrice();
+        this.dialogVisible.set(false);
+      }
+      this.showToast('success', 'Added', 'Product added successfully')
     }
-    this.showToast('success', 'Added', 'Product added successfully')
   };
 
   confirmEdit() {
@@ -277,16 +284,18 @@ export class Invoices implements OnInit {
     if (!selected) return;
 
     // Limpiar referencias circulares antes de enviar
-    const cleanedOrderLines = this.orderLines().map(line => ({
-      id: line.id > 0 ? line.id : undefined,
-      quantity: line.quantity,
-      unityPrice: line.unityPrice,
-      product: {
-        id: line.product.id,
-        name: line.product.name,
-        image: line.product.image
-      }
-    }));
+    const cleanedOrderLines = this.orderLines().map(
+      line => ({
+        id: line.id > 0 ? line.id : undefined,
+        quantity: line.quantity,
+        unityPrice: line.unityPrice,
+        product: {
+          id: line.product.id,
+          name: line.product.name,
+          image: line.product.image
+        }
+      }));
+
 
     const payload: iOrder = {
       ...selected,

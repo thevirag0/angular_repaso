@@ -6,6 +6,7 @@ import { OrderLine } from "../entity/OrderLine";
 import { OrderStatus } from "../entity/OrderStatus";
 import PDFDocument from "pdfkit";
 import * as path from "path";
+import { Product } from "../entity/Product"
 
 export class OrderController {
     private orderRepository = AppDataSource.getRepository(Order)
@@ -93,6 +94,15 @@ export class OrderController {
             // Paso 3: persistir en base de datos.
             await this.orderRepository.save(order);
 
+            //cambiar stock
+            for (const ol of orderLines) {
+                const product = await AppDataSource.getRepository(Product).findOneBy({ id: ol.product.id });
+                if (product) {
+                    product.quantity -= ol.quantity;
+                    await AppDataSource.getRepository(Product).save(product);
+                }
+            }
+
             // Salida #2 (exito): una sola respuesta final para esta peticion.
             response.status(201).json({
                 message: "Order saved successfully",
@@ -153,6 +163,26 @@ export class OrderController {
                     "object": null
                 });
             } else {
+                // ➕ Comparar y ajustar stock
+                for (const newOl of order.orderLines) {
+                    const oldOl = orderToUpdate.orderLines.find(ol => ol.id === newOl.id);
+
+                    // Solo procesar líneas que YA EXISTEN (id > 0)
+                    if (oldOl && newOl.id > 0) {
+                        const quantityDifference = newOl.quantity - oldOl.quantity;
+                        if (quantityDifference !== 0) {
+                            const product = await AppDataSource.getRepository(Product).findOneBy({ id: newOl.product.id });
+                            if (product) {
+                                // Validar que no queda negativo
+                                if (product.quantity - quantityDifference < 0) {
+                                    throw new Error(`Stock insuficiente para ${product.name}`);
+                                }
+                                product.quantity -= quantityDifference;
+                                await AppDataSource.getRepository(Product).save(product);
+                            }
+                        }
+                    }
+                }
                 // Modificación fisico del registro y salida de exito.
                 orderToUpdate.orderDate = order.orderDate;
                 const shouldStampPayDate = order.status === OrderStatus.PAID && orderToUpdate.status !== OrderStatus.PAID;

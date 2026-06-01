@@ -7,26 +7,30 @@ actor Client as C
 
 rectangle "Invoices" {
     usecase "List orders" as LOrd
-    usecase "See invoices" as SInv
+    usecase "Select order" as SelOrd
+    usecase "Select invoice" as SelInv
+    usecase "List invoices" as SInv
     usecase "New Order" as NewOrd
+    usecase "Manage lines" as MLines
     usecase "Add Product" as AddProd
     usecase "Edit Line" as ELine
-    usecase "Save" as Save
     usecase "Change Status" as ChStatus
     usecase "Download Invoice" as DPdf
 }
 
 C --> LOrd
+LOrd --> SelOrd
 C --> SInv
+SInv --> SelInv
 
-LOrd ..|> NewOrd : include
-LOrd ..|> ChStatus : include
-NewOrd ..|> AddProd : include
-NewOrd ..|> ELine : extend
-AddProd ..|> Save : include
-ELine ..|> Save : include
+SelOrd <|.. NewOrd : extends
+SelOrd <|.. ChStatus : extends
+NewOrd <|.. AddProd : extends
+NewOrd <|.. ELine : extends
+ELine <|.. MLines : extends
 
-SInv ..|> ChStatus : include
-SInv ..|> DPdf : include
+
+SelInv <|.. ChStatus : extends
+SelInv <|.. DPdf : extends
 
 @enduml
