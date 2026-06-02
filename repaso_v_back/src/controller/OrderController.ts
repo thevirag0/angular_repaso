@@ -98,6 +98,10 @@ export class OrderController {
             for (const ol of orderLines) {
                 const product = await AppDataSource.getRepository(Product).findOneBy({ id: ol.product.id });
                 if (product) {
+                    //validar stock
+                    if (product.quantity - ol.quantity < 0) {
+                        throw new Error(`Insufficient quantity of ${product.name}`);
+                    }
                     product.quantity -= ol.quantity;
                     await AppDataSource.getRepository(Product).save(product);
                 }
@@ -122,8 +126,11 @@ export class OrderController {
         const id = parseInt(request.params.id as string)
 
         try {
-            // Verificar primero si el pedido existe.
-            const orderToRemove = await this.orderRepository.findOneBy({ id })
+            // Verificar  si el pedido existe y lo carga con relaciones
+            const orderToRemove = await this.orderRepository.findOne({
+                where: { id },
+                relations: { orderLines: true }
+            })
 
             if (!orderToRemove) {
                 // Salida cuando el recurso a borrar no existe.
@@ -154,7 +161,11 @@ export class OrderController {
             // Verificar primero si el pedido existe.
             const orderToUpdate = await this.orderRepository.findOne({
                 where: { id },
-                relations: { orderLines: true }
+                relations: {
+                    orderLines: {
+                        product: true
+                    }
+                }
             })
             if (!orderToUpdate) {
                 // Salida cuando el recurso a modificar no existe.
@@ -163,11 +174,22 @@ export class OrderController {
                     "object": null
                 });
             } else {
-                // ➕ Comparar y ajustar stock
+                // Comparar y ajustar stock
                 for (const newOl of order.orderLines) {
                     const oldOl = orderToUpdate.orderLines.find(ol => ol.id === newOl.id);
 
-                    // Solo procesar líneas que YA EXISTEN (id > 0)
+                    //lineas nuevas
+                    if (!oldOl && (!newOl.id || newOl.id === 0)) {
+                        const product = await AppDataSource.getRepository(Product).findOneBy({ id: newOl.product.id });
+                        if (product) {
+                            if (product.quantity - newOl.quantity < 0) {
+                                throw new Error(`Insufficient stock for ${product.name}`);
+                            }
+                            product.quantity -= newOl.quantity;
+                            await AppDataSource.getRepository(Product).save(product);
+                        }
+                    }
+                    // lineas que ya existen (id !0)
                     if (oldOl && newOl.id > 0) {
                         const quantityDifference = newOl.quantity - oldOl.quantity;
                         if (quantityDifference !== 0) {
@@ -175,7 +197,7 @@ export class OrderController {
                             if (product) {
                                 // Validar que no queda negativo
                                 if (product.quantity - quantityDifference < 0) {
-                                    throw new Error(`Stock insuficiente para ${product.name}`);
+                                    throw new Error(`Insufficient stock for ${product.name}`);
                                 }
                                 product.quantity -= quantityDifference;
                                 await AppDataSource.getRepository(Product).save(product);

@@ -4,20 +4,24 @@ import { Order } from "./Order";
 @Entity("clients")
 export class Client {
     @PrimaryGeneratedColumn()
-    id:number
-    
+    id: number
+
     @Column()
     name: string;
-   
+
     @Column()
     address: string;
-    
+
     @Column()
     email: string;
-    
+
     @Column()
     password: string;
 
-    @OneToMany(() => Order, (order) => order.client)
+    @OneToMany(() => Order, (order) => order.client, {
+        cascade: true,
+        orphanedRowAction: "delete"
+    })
     orders: Order[];
 }
+

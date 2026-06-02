@@ -28,15 +28,24 @@
                             <th style="width:25%">Total Price</th>
                             <th style="width:25%">Status</th>
                             <th style="width:25%"></th>
+                            <th style="width:25%"></th>
 
                         </tr>
                     </ng-template>
                     <ng-template #body let-order>
                         <tr [pSelectableRow]="order">
-                            <td>{{ order.orderDate | date : 'shortDate' }}</td>
+                            <td>{{ order.orderDate | date : 'shortDate' }}
+                                @if (order.id === 0) {
+                                <p-tag value="UNSAVED" styleClass="p-tag-sm" severity="warn" class="ml-2"></p-tag>
+                                }
+                            </td>
                             <td>{{ order.datePaid | date : 'shortDate' }}</td>
                             <td>{{ order.totalPrice }} €</td>
                             <td>{{ order.status }}</td>
+                            <td>
+                                <p-button icon="pi pi-trash" severity="danger" rounded (click)="deleteOrder(order)"
+                                    text></p-button>
+                            </td>
                             <td>
                                 <div class="flex center-content-center">
                                     <p-button [label]="getNextStatusButton(order).label"
@@ -49,6 +58,7 @@
                 </p-table>
             </div>
         </p-tabpanel>
+
         <p-tabpanel [value]="1">
             <div class="card">
                 <p-table [value]="paidOrders()" dataKey="id" selectionMode="single" [selection]="selectedPaidOrder()"
@@ -92,6 +102,16 @@
     </p-tabpanels>
 </p-tabs>
 
+<p-dialog header="Delete order" [modal]="true" [(visible)]="deleteDialogVisible" [style]="{ width: '25rem' }">
+
+    <div class="flex justify-end gap-2">
+        <i class="pi pi-exclamation-triangle" style="font-size: 2rem; color: #f97316;"></i>
+        <span>Are you sure you want to delete order {{ orderToDelete()?.id }}?</span>
+        <p-button label="Delete" severity="danger" icon="pi pi-trash" (click)="confirmDeleteOrder()" />
+        <p-button label="Close" severity="secondary" (click)="cancelDeleteOrder()" />
+    </div>
+</p-dialog>
+
 <h2> ORDER DETAILS </h2>
 
 <p-table [value]="orderLines()" header="Invoice Details" [style]="{ width: '70rem' }">
@@ -112,7 +132,13 @@
                 <img [src]="'http://localhost:3001/images/' + orderLine.product.image" [alt]="orderLine.product.name"
                     width="50" height="50" style="object-fit: cover; border-radius: 8px;" />
             </td>
-            <td>{{ orderLine.product.name }}</td>
+            <td>
+                {{ orderLine.product.name }}
+                @if (rowIndex === numFila() && isBeingEdited()) {
+                <p-tag value="UNSAVED" severity="warn" class="ml-2"></p-tag>
+                }
+            </td>
+
             <td>
                 <label for="quantity" class="font-semibold w-24"></label>
                 <input pInputText id="quantity" class="flex-auto"
@@ -139,8 +165,8 @@
 <p-button icon="pi pi-plus" severity="primary" label="Add Product" [disabled]="isSelectedOrderPaid()" rounded
     (click)="newOrderLine();dialogVisible.set(true)"></p-button>
 
-<p-button icon="pi pi-check" severity="success" label="Save changes" rounded (click)="confirmEdit()"
-    [disabled]="isSelectedOrderPaid()"></p-button>
+<p-button icon="pi pi-check" [severity]="isBeingEdited() ? 'warn' : 'success'" label="Save changes" rounded
+    (click)="confirmEdit()" [disabled]="isSelectedOrderPaid()"></p-button>
 
 <p-button icon="pi pi-times" severity="danger" label="Cancel changes" rounded (click)="cancelChanges()"
     [disabled]="isSelectedOrderPaid()"></p-button>

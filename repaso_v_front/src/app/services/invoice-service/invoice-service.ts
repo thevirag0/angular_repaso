@@ -94,4 +94,8 @@ export class InvoiceService {
     );
   }
 
+  deleteOrder(order: iOrder): Observable<any> {
+    return this.http.delete(`${this.baseUrlOrders}/${order.id}`);
+  }
+
 }

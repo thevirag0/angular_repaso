@@ -56,23 +56,23 @@ export class UserList implements OnInit {
         break;
       case "ADD":
         try {
-        this.userService.add(this.editUser());
-        this.visible = false;
-      } catch (e: any) {
-        this.mensajeVisible.set(true);
-        this.errorMessage.set(e.message);
-      }
+          this.userService.add(this.editUser());
+          this.visible = false;
+        } catch (e: any) {
+          this.mensajeVisible.set(true);
+          this.errorMessage.set(e.message);
+        }
         break;
       case "DEL":
-         try {
-        this.userService.delete(this.editUser());
-        this.visible = false;
-      } catch (e: any) {
-        if (e instanceof Error)
-          this.errorMessage.set(e.message);
-        else
-          this.errorMessage.set(e);
-      }
+        try {
+          this.userService.delete(this.editUser());
+          this.visible = false;
+        } catch (e: any) {
+          if (e instanceof Error)
+            this.errorMessage.set(e.message);
+          else
+            this.errorMessage.set(e);
+        }
     }
   }
 

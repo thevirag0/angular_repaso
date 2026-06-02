@@ -1,6 +1,6 @@
 import { Component, inject, model, OnInit, signal, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { InvoiceService } from '../../services/invoice-service/invoice-service';
-import { ActivatedRoute, Router, TitleStrategy } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { iOrder } from '../../interfaces/iorder';
 import { DialogModule } from 'primeng/dialog';
 import { TableModule, Table } from 'primeng/table';
@@ -16,16 +16,15 @@ import { CommonModule } from '@angular/common';
 import { ClientService } from '../../services/client/client-service';
 import { TabsModule } from 'primeng/tabs';
 import { iClient } from '../../interfaces/iclient';
-import { consumerPollProducersForChange } from '@angular/core/primitives/signals';
-import { RouterTestingHarness } from '@angular/router/testing';
-import { RippleModule } from 'primeng/ripple';
-import { Toast, ToastModule } from "primeng/toast";
+import { ToastModule } from "primeng/toast";
 import { MessageService } from 'primeng/api';
+import { Tag } from 'primeng/tag';
+
 
 
 @Component({
   selector: 'app-invoices',
-  imports: [CommonModule, TableModule, TabsModule, DialogModule, InputIconModule, IconFieldModule, ButtonModule, InputTextModule, FormsModule, InputTextModule, FormsModule, ToastModule],
+  imports: [CommonModule, Tag, TableModule, TabsModule, DialogModule, InputIconModule, IconFieldModule, ButtonModule, InputTextModule, FormsModule, InputTextModule, FormsModule, ToastModule],
   templateUrl: './invoices.html',
   styleUrl: './invoices.css',
   providers: [MessageService],
@@ -33,6 +32,7 @@ import { MessageService } from 'primeng/api';
 })
 
 export class Invoices implements OnInit {
+
 
   messageService = inject(MessageService);
   clientService = inject(ClientService);
@@ -46,6 +46,7 @@ export class Invoices implements OnInit {
   private route = inject(ActivatedRoute);
   orderLines = signal<iOrderLine[]>([]);
   //selectedOrder = model<iOrder>();
+  isBeingEdited = signal<boolean>(false);
   isReadOnly = signal<boolean>(true);
   numFila = signal<number>(-1);
   selectedProduct = model<iProduct>();
@@ -56,6 +57,8 @@ export class Invoices implements OnInit {
   selectedActiveOrder = model<iOrder>();
   selectedPaidOrder = model<iOrder>();
   cdr = inject(ChangeDetectorRef);
+  deleteDialogVisible = signal<boolean>(false);
+  orderToDelete = model<iOrder>();
 
   @ViewChild('activeTable') activeTable?: Table;
   @ViewChild('paidTable') paidTable?: Table;
@@ -117,6 +120,7 @@ export class Invoices implements OnInit {
   editSelectedOrderLine(orderLine: iOrderLine, index: number) {
     this.numFila.set(index);
     this.isReadOnly.set(false);
+    this.isBeingEdited.set(true);
     //guardar una copia de la linea para tenerla si se cancela
     this.editLine.set({ ...orderLine });
   }
@@ -171,8 +175,27 @@ export class Invoices implements OnInit {
   };
 
   confirmEdit() {
-    this.numFila.set(-1);
-    this.isReadOnly.set(true);
+    const index = this.numFila();
+
+    // Si hay una fila siendo editada, validar y cerrar edición
+    if (index >= 0 && index < this.orderLines().length) {
+      const editedLine = this.orderLines()[index];
+
+      if (editedLine.quantity > editedLine.product.quantity) {
+        // Restaurar la cantidad original
+        editedLine.quantity = this.editLine().quantity;
+        this.updateTotalPrice();
+        this.showToast('error', 'Error', `Insufficient stock quantity. Available products: ${editedLine.product.quantity}`);
+        return;
+      }
+
+      this.numFila.set(-1);
+      this.isBeingEdited.set(false);
+      this.isReadOnly.set(true);
+    }
+
+    // Guardar la orden completa (siempre)
+    this.updateTotalPrice();
     this.saveOrder();
   }
   //comprueba si la order esta en el array de pagados
@@ -258,6 +281,19 @@ export class Invoices implements OnInit {
   }
 
   cancelChanges() {
+    const order = this.selectedActiveOrder();
+    if (order && order.id === 0) {
+      this.allOrders.update(all => all.filter(o => o.id !== 0));
+      this.activeOrders.update(active => active.filter(o => o.id !== 0));
+      this.selectedActiveOrder.set(undefined);
+      this.orderLines.set([]);
+      this.numFila.set(-1);
+      this.isReadOnly.set(true);
+      this.isBeingEdited.set(false);
+      this.showToast('warn', 'Cancelled', 'New order cancelled');
+      return;
+    }
+
     const index = this.numFila();
     if (index < 0 || index >= this.orderLines().length) return;
     const originalLine = this.editLine();
@@ -266,6 +302,7 @@ export class Invoices implements OnInit {
     );
     this.numFila.set(-1);
     this.isReadOnly.set(true);
+    this.isBeingEdited.set(false);
     this.updateTotalPrice();
     this.showToast('warn', 'Cancelled', 'Operation cancelled.')
   }
@@ -333,13 +370,16 @@ export class Invoices implements OnInit {
           this.displayOrderLines(finalOrder);
           this.numFila.set(-1);
           console.log('Order updated successfully:', finalOrder);
+          this.showToast('success', 'Success', 'Changes saved successfully')
+
         },
         error: (err) => {
           console.log('Error updating order:', err);
+          this.showToast('error', 'Error', 'Changes could not be saved.');
+
         }
       });
     }
-    this.showToast('success', 'Success', 'Changes saved successfully')
   }
 
   // Recalcular el totalPrice de una orden basado en sus orderLines
@@ -501,6 +541,48 @@ export class Invoices implements OnInit {
     });
 
   }
+
+  deleteOrder(order: iOrder) {
+    if (!order) return;
+
+    this.orderToDelete.set(order);
+    this.deleteDialogVisible.set(true);
+  }
+
+  confirmDeleteOrder() {
+    const order = this.orderToDelete();
+    if (!order) return;
+    this.deleteDialogVisible.set(false);
+    //borrar del front si es order nueva 
+    if (order.id === 0) {
+      this.allOrders.update(all => all.filter(o => o.id !== 0));
+      this.activeOrders.update(active => active.filter(o => o.id !== 0));
+      this.selectedActiveOrder.set(undefined);
+      this.orderLines.set([]);
+      this.showToast('success', 'Deleted', 'Order deleted');
+    } else {
+      this.orderService.deleteOrder(order).subscribe({
+        next: () => {
+          this.allOrders.update(all => all.filter(o => o.id !== order.id));
+          this.activeOrders.update(active => active.filter(o => o.id !== order.id));
+          this.paidOrders.update(paid => paid.filter(o => o.id !== order.id));
+          this.selectedActiveOrder.set(undefined);
+          this.orderLines.set([]);
+          this.showToast('success', 'Deleted', 'Order deleted');
+        },
+        error: (err) => {
+          this.showToast('error', 'Error', 'Could not delete order');
+        }
+      });
+    }
+    this.orderLines.set([]);
+  }
+
+  cancelDeleteOrder() {
+    this.deleteDialogVisible.set(false);
+    this.orderToDelete.set(undefined);
+  }
+
   //compareOrders(o1: iOrder, o2: iOrder): boolean {
   //  return o1 && o2 ? o1.id === o2.id : o1 === o2;
   // }

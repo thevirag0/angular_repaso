@@ -13,7 +13,9 @@ export class OrderLine {
     @Column()
     quantity: number;
 
-    @ManyToOne(() => Order, (order) => order.orderLines)
+    @ManyToOne(() => Order, (order) => order.orderLines, {
+        onDelete: 'CASCADE'
+    })
     @JoinColumn({ name: "order_id" })
     order: Order;
 
